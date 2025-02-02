@@ -144,63 +144,209 @@
 - Введение.
 - Виды Проектирования.
 - Этапы объектно-ориентированной разработки: OOA → OOD → OOP
-    - Анализ (OOA):
-    - Проектирование (OOD):
-    - Реализация (OOP):
+  - Анализ (OOA):
+  - Проектирование (OOD):
+  - Реализация (OOP):
 - Подход к проектированию :
-    - Базовые принципы:
-        - KISS (Keep It Simple, Stupid)
-        - DRY (Don’t Repeat Yourself)
-    - Data-Driven Development (DDD)
-    - Test-Driven Development (TDD)
+  - Базовые принципы:
+    - KISS (Keep It Simple, Stupid)
+    - DRY (Don’t Repeat Yourself)
+  - Data-Driven Development (DDD)
+  - Test-Driven Development (TDD)
 - Патерны проектирования.
-    - Порождающие.
-    - Структурные.
-    - Поведенческие.
+  - Порождающие.
+  - Структурные.
+  - Поведенческие.
 - Основные принципы ООП - SOLID.
-    - The Single Responsibility Principle (S)
-    - The Open Closed Principle (O)
-    - The Liskov Substitution Principle (L)
-    - ISP: The Interface Segregation Principle (I)
-    - DIP: The Dependency Inversion Principle (D)
+  - The Single Responsibility Principle (S)
+  - The Open Closed Principle (O)
+  - The Liskov Substitution Principle (L)
+  - ISP: The Interface Segregation Principle (I)
+  - DIP: The Dependency Inversion Principle (D)
 
 # Лекция 17. СУБД. PostgreSQL. SQL. DDL. Пользователи. DCL. DML. Связи.
+
 - Введение в СУБД.
 - Типы СУБД.
 - Примеры СУБД.
 - PostgreSQL.
-    - Установка PostgreSQL.
+  - Установка PostgreSQL.
 - Таблицы:
-    - Строки.
-    - Столбцы.
+  - Строки.
+  - Столбцы.
 - Типы данных в БД.
-    - Строковые.
-    - Числовые.
-    - Булевые.
-    - NULL.
-    - Собственные типы данных.
+  - Строковые.
+  - Числовые.
+  - Булевые.
+  - NULL.
+  - Собственные типы данных.
 - Основные операции c данными (CRUD).
-    - C - Create (Создание).
-    - R - Read (Чтение).
-    - U - Update (Обновление).
-    - D - DELETE (Удаление).
+  - C - Create (Создание).
+  - R - Read (Чтение).
+  - U - Update (Обновление).
+  - D - DELETE (Удаление).
 - SQL (Structured Query Language) (Структурированный язык запросов)
-    - DDL (Data definition language) (Язык определения данных)
-        - CREATE
-        - ALTER
-        - DROP
-        - TRUNCATE  
-        - Создание пользователя.
-        - Создание БД.
-        - Права доступа к БД.
 
-    - DCL (Data Control Language)
-        - GRANT 
-        - REVOKE
-    - DML (Data manipulating language)
-        - INSERT
-        - UPDATE
-        - DELETE
-    - Связи
-        - Ключевые слова
-        - Типы связей
+  - DDL (Data definition language) (Язык определения данных)
+
+    - CREATE
+    - ALTER
+    - DROP
+    - TRUNCATE
+    - Создание пользователя.
+    - Создание БД.
+    - Права доступа к БД.
+
+  - DCL (Data Control Language)
+    - GRANT
+    - REVOKE
+  - DML (Data manipulating language)
+    - INSERT
+    - UPDATE
+    - DELETE
+  - Связи
+    - Ключевые слова
+    - Типы связей
+
+# Лекция 18. СУБД. DQL. SELECT. Индексы. Group by. Joins.
+
+- DQL (Data query language) (Язык запроса данных):
+  - SELECT
+  - FROM
+  - WHERE:
+    - Операторы сравнения: =, !=, >, <, >=, <=.
+    - Операторы логики: AND, OR, NOT.
+    - Поиск по шаблону (LIKE)
+  - Сортировка (ORDER BY):
+    - ASC
+    - DESC
+  - Агрегатные функции:
+    - COUNT() Количество строк
+    - SUM() Сумма значений
+    - AVG() Среднее значение
+    - MIN() Минимальное значение
+    - MAX() Максимальное значение
+  - Группировка данных (GROUP BY)
+    - HAVING
+  - Ограничение количества строк (LIMIT, OFFSET)
+  - Использование операторов UNION, INTERSECT и EXCEPT в SQL
+  - Объединение таблиц (JOIN):
+    - INNER JOIN (внутреннее соединение)
+    - LEFT JOIN (левое соединение)
+    - RIGHT JOIN (правое соединение)
+    - FULL OUTER JOIN (полное соединение)
+
+# Лекция 19. СУБД. Нормализация. Аномалии. Транзакции. ACID. TCL. Backup
+
+- Нормализация
+- Аномалии
+  - Три нормальные формы.
+- Транзакции
+  - TCL
+  - ACID
+- Backup
+
+# Лекция 20. Virtual env. Pip. Устанавливаемые модули. Pyenv.
+
+- Введение в управление окружением в Python
+- Virtualenv и venv (Создание виртуального окружения)
+- Управление пакетами с Pip
+- Устанавливаемые модули
+- Pyenv – управление версиями Python
+- Сравнение инструментов (venv, virtualenv, pyenv, pipenv)
+
+# Лекция 21. Знакомство с Интеренетом.
+
+- Введение: Как работает интернет?
+  - Что такое интернет?
+  - Как устройства соединяются между собой?
+  - Роль серверов, клиентов и сетевого протокола.
+  - Примеры веб-сайтов и веб-приложений.
+- Клиент-серверная архитектура
+
+  - Кто такой клиент (браузер, мобильное приложение).
+  - Кто такой сервер (где хранится код и данные).
+  - Различие статических и динамических сайтов.
+  - Как клиент и сервер взаимодействуют через запросы и ответы.
+
+- HTTP – Основной протокол веба
+  - Что такое HTTP (HyperText Transfer Protocol)?
+  - Разница между HTTP и HTTPS.
+  - Как работает запрос-ответ?
+  - Структура HTTP-запроса:
+    - Метод (GET, POST, PUT, DELETE).
+    - Заголовки (Headers).
+    - Тело запроса (Body).
+  - Структура HTTP-ответа:
+    - Код ответа (200 OK, 404 Not Found, 500 Internal Server Error).
+    - Тело ответа (HTML, JSON, XML).
+
+# Лекция 22. Введение в Django. Основы веб-разработки на Python
+
+- Введение в Django
+
+  - Что такое Django и почему его выбирают?
+  - История и философия Django ("The web framework for perfectionists with deadlines").
+  - Преимущества Django:
+    - Быстрое создание веб-приложений.
+    - Автоматическое управление БД (ORM).
+    - Безопасность (защита от XSS, CSRF, SQL-инъекций).
+    - Гибкость и масштабируемость.
+  - Примеры крупных проектов на Django (Instagram, Spotify, Disqus).
+
+- Архитектура Django: MVT (Model-View-Template)
+  - Шаблон проектирования MVC.
+  - Django основан на MVT (Model-View-Template), который похож на MVC.
+  - Разница между MVC и MVT
+  - Как взаимодействуют Model, View и Template в Django.
+- Установка Django и создание первого проекта
+  - Установка Django:
+    - Создание виртуального окружения
+    - Установка Django
+  - Создание первого проекта Django
+    - Команда для создания проекта
+    - Запуск сервера разработки
+    - Разбор структуры проекта
+  - Создание первого приложения в Django
+    - Команда для создания приложения
+    - Разбор структуры приложения
+    - Подключение приложения в settings.py
+  - Основы маршрутизации (urls.py)
+    - Что такое маршрутизация?
+    - Структура URL-маршрутов в Django:
+      - Главный urls.py (основной файл маршрутизации проекта)
+      - urls.py внутри приложения (локальные маршруты)
+    - Динамические параметры в URL
+      - int:id
+      - str:username
+    - Именованные маршруты (name)
+    - Перенаправления и обработка ошибок
+    - Регулярные выражения в маршрутах (re_path)
+
+# Лекция 23. Шаблоны (Templates) в Django
+
+- Введение в Django Templates:
+     - Что такое шаблоны и зачем они нужны?
+     - Где Django ищет шаблоны (TEMPLATES в settings.py).
+     - Структура каталога templates/.
+     - Как Django рендерит HTML-страницы?
+     - Разбор стандартного процесса: - Запрос → URL → View → Template → Ответ пользователю.
+
+- Базовый синтаксис шаблонного языка:
+    - Вывод переменных ({{ }})
+    - Шаблонные фильтры (filters)
+- Управляющие конструкции в шаблонах:
+    - Условные операторы (if / elif / else)
+    - Циклы (for)
+- Наследование шаблонов
+    - Базовый шаблон (base.html):
+        - Как избежать дублирования кода с помощью {% block %} и {% extends %}.
+        - Создание базового шаблона.
+        - Использование extends в дочерних шаблонах
+- Подключение CSS, JS и статических файлов:
+    - Работа с static/
+    - Подключение CSS и SCSS
+    - Подключение изображений
+    - Включение частей шаблонов (include)
+    - Практика
+
