@@ -311,10 +311,6 @@ print(fruits)  # set()
 a | b  # {1, 2, 3, 4, 5}
 ```
 
-```python
-
-```
-
 **Разность множеств**
 
 Возвращает элементы, которые есть в A, но нет в B:
@@ -679,6 +675,106 @@ print(response.status_code)  # 200 (если сайт доступен)
 ```
 
 `requests` помогает делать `HTTP`-запросы, но без установки работать не будет!
+
+### JSON
+
+`JSON` (JavaScript Object Notation) — стандартный текстовый формат для хранения и передачи структурированных данных. Он основан на синтаксисе объекта в `JavaScript`, но не привязан к нему. Работу с ним поддерживают многие современные языки программирования: `Python`, `Java` и другие.
+
+**Основные особенности JSON:**
+
+- Используется в `API`, веб-разработке, базах данных.
+- Поддерживает ключи-строки и простые типы данных (`int`, `float`, `bool`, `null`, `list`, `dict`).
+- Не поддерживает `tuple`, `set`, `complex`.
+
+Пример JSON:
+
+```json
+{
+    "name": "Alice",
+    "age": 25,
+    "is_student": false,
+    "languages": ["English", "Spanish"],
+    "address": {
+        "city": "New York",
+        "zipcode": "10001"
+    }
+}
+```
+
+В Python это будет:
+
+```python
+data = {
+    "name": "Alice",
+    "age": 25,
+    "is_student": False,
+    "languages": ["English", "Spanish"],
+    "address": {
+        "city": "New York",
+        "zipcode": "10001"
+    }
+}
+```
+
+`JSON` похож на Python-словарь, но в нем:
+
+`true` → `True`,
+`false` → `False`,
+`null` → `None`.
+
+**Импорт JSON из строки**
+
+Если у вас есть `JSON` в виде строки, нужно использовать `json.loads()` для преобразования в словарь:
+
+```python
+import json
+
+json_string = '{"name": "Alice", "age": 25, "city": "New York"}'
+data = json.loads(json_string)
+
+print(data)  # {'name': 'Alice', 'age': 25, 'city': 'New York'}
+print(data["name"])  # Alice
+```
+
+**Импорт JSON из файла**
+
+Если `JSON` хранится в файле (data.json):
+
+```python
+import json
+
+with open("data.json", "r", encoding="utf-8") as file:
+    data = json.load(file)  # загружаем JSON в Python-словарь
+
+print(data)
+```
+
+Файл data.json:
+
+```json
+{
+    "name": "Alice",
+    "age": 25,
+    "city": "New York"
+}
+```
+
+**Сохранение Python-словаря в JSON**
+
+Если нужно сохранить Python-объект (`dict`, `list`) в `JSON`:
+
+```python
+data = {"name": "Alice", "age": 25, "city": "New York"}
+
+with open("data.json", "w", encoding="utf-8") as file:
+    json.dump(data, file, indent=4, ensure_ascii=False)  # сохраняем с отступами
+```
+
+**Параметры:**
+
+`indent=4` – красивый формат с отступами.
+`ensure_ascii=False` – сохраняет кириллицу нормально.
+
 
 ### Практические задания по кортежам, множествам и словарям
 
