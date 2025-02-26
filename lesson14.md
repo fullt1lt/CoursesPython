@@ -335,6 +335,201 @@ print("Путь к интерпретатору:", sys.executable)
 Путь к интерпретатору: /usr/bin/python3
 ```
 
+### Работа с JSON в Python
+
+**JSON (JavaScript Object Notation)** – это популярный формат обмена данными, который используется для хранения и передачи информации в структурированном виде.
+`JSON` представляет собой текстовый формат, похожий на словари `(dict)` в Python, и поддерживает основные типы данных:
+
+- строки (`string`)
+- числа (`int`, `float`)
+- логические значения (`bool`)
+- массивы (`list`)
+- объекты (`dict`)
+- `null` (аналог `None` в Python)
+
+**Пример JSON-объекта**
+
+Пример `JSON`, который хранит информацию о пользователе:
+
+```json
+{
+    "name": "Alice",
+    "age": 25,
+    "is_student": false,
+    "languages": ["English", "Spanish"],
+    "address": {
+        "city": "New York",
+        "zipcode": "10001"
+    }
+}
+```
+
+Этот JSON-объект можно представить в Python как обычный словарь:
+
+```python
+data = {
+    "name": "Alice",
+    "age": 25,
+    "is_student": False,
+    "languages": ["English", "Spanish"],
+    "address": {
+        "city": "New York",
+        "zipcode": "10001"
+    }
+}
+```
+
+#### Как работать с JSON в Python?
+
+В Python есть встроенный модуль `json`, который позволяет легко преобразовывать данные между `JSON` и Python-объектами.
+
+**Импорт модуля JSON**
+
+Перед работой с JSON необходимо импортировать модуль:
+
+```python
+import json
+```
+
+**1️. Чтение JSON-данных из строки (json.loads)**
+
+Если у нас есть JSON-данные в виде строки, мы можем преобразовать их в Python-словарь с помощью `json.loads()`.
+
+```python
+import json
+
+json_string = '{"name": "Alice", "age": 25, "city": "New York"}'
+
+# Преобразуем JSON-строку в Python-словарь
+data = json.loads(json_string)
+
+print(data["name"])  # Alice
+print(data["age"])   # 25
+```
+
+Здесь `json.loads()` принимает JSON-строку и возвращает Python-словарь.
+
+**2️. Запись JSON в файл (json.dump)**
+
+Для сохранения данных в файл используется `json.dump()`.
+
+```python
+import json
+
+data = {
+    "name": "Alice",
+    "age": 25,
+    "city": "New York"
+}
+
+# Записываем данные в файл "data.json"
+with open("data.json", "w", encoding="utf-8") as file:
+    json.dump(data, file, indent=4, ensure_ascii=False)  # Красивая запись с отступами
+```
+
+- `indent=4` → добавляет отступы, чтобы JSON-файл был читаемым.
+- `ensure_ascii=False `→ сохраняет кириллицу без преобразования в юникод.
+
+После выполнения в файле `data.json` появится:
+
+```json
+{
+    "name": "Alice",
+    "age": 25,
+    "city": "New York"
+}
+```
+
+**3️. Чтение JSON из файла (json.load)**
+
+Чтобы прочитать JSON-данные из файла и преобразовать их в Python-объект, используется json.load().
+
+```python
+import json
+
+# Читаем данные из файла "data.json"
+with open("data.json", "r", encoding="utf-8") as file:
+    data = json.load(file)
+
+print(data)  # {'name': 'Alice', 'age': 25, 'city': 'New York'}
+```
+
+Теперь `data` – это обычный Python-словарь, и мы можем с ним работать.
+
+**4️. Преобразование Python-объекта в JSON-строку (json.dumps)**
+
+Иногда нам нужно преобразовать Python-объект в JSON-строку (например, для передачи по сети).
+
+```python
+import json
+
+data = {
+    "name": "Alice",
+    "age": 25,
+    "city": "New York"
+}
+
+# Преобразуем Python-объект в JSON-строку
+json_string = json.dumps(data, indent=4, ensure_ascii=False)
+
+print(json_string)
+```
+
+**Вывод:**
+
+```json
+{
+    "name": "Alice",
+    "age": 25,
+    "city": "New York"
+}
+```
+
+`json.dumps()` полезен, когда нужно передать данные в JSON-формате без записи в файл.
+
+**5️. Добавление новых данных в JSON-файл**
+
+Если нужно добавить новые данные в уже существующий JSON-файл, делаем это в два шага:
+
+- Читаем данные из файла.
+- Добавляем новые данные.
+- Записываем обратно.
+
+```python
+import json
+
+# Читаем существующий JSON-файл
+with open("data.json", "r", encoding="utf-8") as file:
+    data = json.load(file)
+
+# Добавляем новый ключ
+data["email"] = "alice@example.com"
+
+# Записываем обратно в файл
+with open("data.json", "w", encoding="utf-8") as file:
+    json.dump(data, file, indent=4, ensure_ascii=False)
+
+print(" Данные успешно обновлены!")
+```
+Теперь файл data.json будет выглядеть так:
+
+```json
+{
+    "name": "Alice",
+    "age": 25,
+    "city": "New York",
+    "email": "alice@example.com"
+}
+```
+
+#### Где используется JSON?
+
+- Хранение данных в файлах (data.json)
+- Обмен данными между программами и сервисами
+- Конфигурационные файлы (config.json)
+- Хранение настроек пользователя
+
+
 ### Импорт внешних библиотек
 
 Однако встроенных модулей иногда недостаточно. Например, в Python нет встроенных инструментов для работы с `HTTP-запросами` или анализа данных.
