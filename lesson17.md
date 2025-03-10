@@ -747,7 +747,7 @@ CREATE TABLE passports (
 Таблица passports (Паспорта)
 
 - `id SERIAL PRIMARY KEY `– уникальный идентификатор паспорта.
-- `user_id INT UNIQUE NOT NULL` – внешний ключ, ссылающийся на users.id.
+- `user_id INT UNIQUE NOT NULL` – внешний ключ, ссылающийся на `users.id`.
 - `UNIQUE` – гарантирует, что у одного пользователя может быть только один паспорт.
 - `NOT NULL` – нельзя создать паспорт без владельца.
 - `passport_number VARCHAR(20) NOT NULL` – номер паспорта.
@@ -757,6 +757,8 @@ CREATE TABLE passports (
 
 - `ON DELETE CASCADE` – если удалить пользователя, его паспорт тоже удалится.
 - `ON UPDATE CASCADE` – если изменить id пользователя, он обновится во всех записях passports.
+
+Обратите внимание, поле `user_id` содержит модификатор `UNIQUE` именно он обеспечивает нам связь `1-to-1`, без него это была бы `1-to-many` как в следующем примере.
 
 
 ## **2. Один ко многим (One-to-Many)**
