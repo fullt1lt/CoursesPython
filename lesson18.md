@@ -859,7 +859,8 @@ SELECT name FROM accessories;
 
 ## Оператор JOIN в SQL
 
-![all_join.jpg](image/all_join.jpg)
+![all_join.jpg](image/all_join.jpg)/
+
 
 ### Что такое JOIN и зачем он нужен?
 
