@@ -257,8 +257,6 @@ Server: Apache/2.4.41 (Ubuntu)
 **Запрос:**
 
 ```http
-Копировать
-Редактировать
 GET /index.html HTTP/1.1
 Host: example.com
 ```
@@ -268,7 +266,9 @@ Host: example.com
 ```http
 HTTP/1.1 200 OK
 Content-Type: text/html
+```
 
+```html
 <!DOCTYPE html>
 <html>
 <head><title>Example</title></head>
