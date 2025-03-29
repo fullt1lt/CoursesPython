@@ -192,8 +192,14 @@ python -m venv venv
 
 **Windows (cmd / PowerShell):**
 
-```bash
+```powershell
 venv\Scripts\activate
+```
+
+**Windows (cmd / Git bash):**
+
+```bash
+source venv_lesson/Scripts/activate
 ```
 
 **Mac / Linux:**
@@ -576,7 +582,7 @@ urlpatterns = [
 Допустим, мы хотим обрабатывать путь вида:
 
 ```plaintext
-http://localhost:8000/greet/Иван/
+http://localhost:8000/hello/Иван/
 ```
 
 и показать на странице:
@@ -624,3 +630,181 @@ urlpatterns = [
 
 ![](image/URL_Error_not_found.png)
 
+**Пример с числами, фиксированным значением и динамическим параметром:**
+
+Для этого добавим маршруты с фиксированным значением и динамическим параметром в `urls.py`:
+
+```python
+from my_app.views import hello, home, hello_fixed, hello_dynamic, hello_id
+from django.urls import path
+
+urlpatterns = [
+    path("", home),
+    path("hello/", hello),
+    path("hello/fixed", hello_fixed, name="hello_fixed"),
+    path("hello/<str:name>/", hello_dynamic, name="hello_name"),
+    path("hello/id/<int:user_id>/", hello_id, name="hello_by_id"),
+]
+```
+
+`name="..."` — это просто удобная метка для маршрута, чтобы потом можно было легко на него сослаться. Иногда нам нужно дать имя маршруту, чтобы потом обратиться к нему по имени, а не по самому адресу. Это удобно, когда у вас много маршрутов и вы хотите сделать код более читаемым.
+
+А также добавим функции в `views.py`:
+
+```python
+from django.shortcuts import render
+from django.http import HttpResponse
+
+
+def hello(request):
+    return HttpResponse("Hello, World!")
+
+def home(request):
+    return HttpResponse("Home Page")
+
+def hello_fixed(request):
+    return HttpResponse("Привет! Это hello по жёстко заданному адресу")
+
+
+def hello_dynamic(request, name):
+    return HttpResponse(f"Привет, {name}!")
+
+
+def hello_id(request, user_id):
+    return HttpResponse(f"Привет, пользователь с ID {user_id}!")
+```
+
+По анологии мы получим разные страницы на которых увидим разные приветствия:
+
+![](image/URL_hello_fixed.png)
+
+![](image/URL_id.png)
+
+Так же можно использовать `slug` в качестве параметра, чтобы передавать в URL.
+
+**slug** — это строка, состоящая из букв, цифр и символов `-` и `_`. Она используется для создания удобочитаемых `URL`. Например, вместо `http://example.com/article/123` можно использовать `http://example.com/article/my-first-article`.
+обычно `slug` используется в адресах статей, категорий и других объектов, чтобы сделать их более понятными для пользователей и поисковых систем.
+
+И может перндавать только:
+
+- строчные латинские буквы (a-z)
+- цифры (0-9)
+- дефисы (-)
+
+Давайте добавим маршрут с `slug` в `urls.py`:
+
+```python
+from my_app.views import hello, home, hello_fixed, hello_dynamic, hello_id, hello_slug
+from django.urls import path
+
+urlpatterns = [
+    path("", home),
+    path("hello/", hello),
+    path("hello/fixed", hello_fixed, name="hello_fixed"),
+    path("hello/<str:name>/", hello_dynamic, name="hello_name"),
+    path("hello/id/<int:user_id>/", hello_id, name="hello_by_id"),
+    path("hello/slug/<slug:slug>/", hello_id, name="hello_by_slug")
+]
+```
+
+И в `views.py`:
+
+```python
+from django.shortcuts import render
+from django.http import HttpResponse
+
+
+def hello(request):
+    return HttpResponse("Hello, World!")
+
+def home(request):
+    return HttpResponse("Home Page")
+
+def hello_fixed(request):
+    return HttpResponse("Привет! Это hello по жёстко заданному адресу")
+
+
+def hello_dynamic(request, name):
+    return HttpResponse(f"Привет, {name}!")
+
+
+def hello_id(request, user_id):
+    return HttpResponse(f"Привет, пользователь с ID {user_id}!")
+
+def hello_slug(request, slug): # <-- добавляем новый маршрут
+    return HttpResponse(f"Привет, {slug}!")
+```
+
+![](image/URL_slug.png)
+
+## Регулярные выражения (re_path) в маршрутах Django
+
+![](image/regex.jpg)
+
+В `Django`, кроме обычного` path()`, есть ещё один способ задавать маршруты — с помощью `re_path()`. Он позволяет использовать регулярные выражения (`regex`), чтобы описывать более гибкие шаблоны `URL`.
+
+### А зачем вообще нужны регулярные выражения в URL?
+
+Иногда обычный `path()` не справляется. Например:
+
+- Вам нужно принять какой-то сложный шаблон URL.
+- Или вы хотите, чтобы один путь подходил под несколько форматов.
+
+Тогда вы используете `re_path()`, и он даст вам больше гибкости, но взамен нужно немножко разобраться в синтаксисе.
+
+### Простое объяснение: что такое регулярное выражение?
+
+![](image/regex_example.jpg)
+
+Регулярное выражение — это способ задать шаблон для текста.
+
+Пример из жизни:
+
+- `\d+` — значит "одна или более цифр"
+- `\w+` — значит "одна или более букв или цифр"
+- `^` и `$` — говорят: "начало строки" и "конец строки"
+
+### Пример в Django
+
+Допустим, вы хотите, чтобы URL выглядел так:
+
+- `/article/123/` — где `123` — это любое число.
+
+Через `path()` это делается так:
+
+```python
+path("article/<int:article_id>/", article_view)
+```
+
+А через регулярку:
+
+```python
+re_path(r"^article/(?P<article_id>\d+)/$", article_view)
+```
+
+**Что тут происходит?**
+
+- `^article/` — начало пути
+- `(?P<article_id>\d+)` — "поймай одно или больше чисел и назови это article_id"
+- `/$` — путь должен заканчиваться слэшем
+
+### Когда использовать re_path()?
+
+На начальном этапе — редко.
+Почти всё можно выразить через `path()` с параметрами (`<int:id>`, `<str:slug>` и т.п.)
+
+Но если:
+
+- нужно принять дату в формате 2024-03-01
+- или e-mail в URL
+- или разные форматы в одном пути
+
+Тогда регулярки вас спасут
+
+### Не пугайтесь!
+
+![](https://media.tproger.ru/uploads/2021/07/ris1.jpg)
+
+Вы не обязаны уметь писать сложные регулярки с нуля. Главное — понимать идею: это шаблон, который проверяет, подходит ли текст (в нашем случае — URL).
+
+Позже мы ещё разберём их в отдельной лекции. Сейчас — просто запомните, что есть такой инструмент и он называется `re_path`.
