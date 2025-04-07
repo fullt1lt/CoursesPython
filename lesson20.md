@@ -106,6 +106,12 @@ myenv/
 myenv\Scripts\activate
 ```
 
+Если вы используете Git Bash в Windows или VsCode, то используйте:
+
+```bash
+source myenv/Scripts/activate
+```
+
 **Mac/Linux (bash, zsh, fish):**
 
 ```bash
