@@ -507,56 +507,112 @@ print(user.age)   # 30
 
 Обычно, чтобы получить или изменить атрибут, мы обращаемся к нему напрямую `(obj.attr)`. Но иногда нам нужно добавить логику при получении или изменении атрибута. В таких случаях используют `@property`, который превращает метод в "виртуальное" свойство.
 
-Использование `@property`
+**Пример: обычный метод**
 
 ```python
 class Person:
-    def __init__(self, name):
-        self._name = name  # Приватный атрибут
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
 
-    @property
-    def name(self):
-        print("Получаем имя...")
-        return self._name  # Геттер
+    def get_full_name(self):
+        return f"{self.name} {self.surname}"
 
-person = Person("Alice")
-print(person.name)  # Получаем имя... Alice
+p = Person("Иван", "Петров")
+print(p.get_full_name())  # Иван Петров
 ```
-`@property` делает метод `name()` "виртуальным атрибутом", который можно вызвать без (). Теперь `person.name` выглядит как атрибут, но на самом деле вызывает метод.
 
-**Пример @property + @setter**
-
-Мы можем сделать свойство доступным для изменения, добавив `@name.setter`:
+**Делаем красивее с `@property`**
 
 ```python
 class Person:
-    def __init__(self, name):
-        self._name = name
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
 
     @property
-    def name(self):
-        return self._name
+    def full_name(self):
+        return f"{self.name} {self.surname}"
 
-    @name.setter
-    def name(self, new_name):
-        print(f"Имя изменено на {new_name}")
-        self._name = new_name  # Изменяем атрибут
-
-person = Person("Alice")
-person.name = "Bob"  # Вызывается сеттер
-print(person.name)   # Bob
+p = Person("Иван", "Петров")
+print(p.full_name)  # Иван Петров — БЕЗ скобок!
 ```
-**Что изменилось?**
 
-Теперь `person.name = "Bob"` не просто записывает значение, а вызывает метод `name.setter`.
+Теперь `full_name` — это как будто обычный атрибут. Хотя под капотом — метод.
+
+**А если нужно изменить full_name?**
+
+Обычно, если написать так:
+
+```python
+p.full_name = "Андрей Смирнов"
+```
+
+Получим ошибку, потому что @property по умолчанию только для чтения. Чтобы разрешить изменение, используем `@<property>.setter`.
+
+**@property + @setter — пример:**
+
+```python
+class Person:
+    def __init__(self, name, surname):
+        self.name = name
+        self.surname = surname
+
+    @property
+    def full_name(self):
+        return f"{self.name} {self.surname}"
+
+    @full_name.setter
+    def full_name(self, value):
+        name, surname = value.split()
+        self.name = name
+        self.surname = surname
+
+p = Person("Иван", "Петров")
+print(p.full_name)  # Иван Петров
+
+p.full_name = "Андрей Смирнов"  # Меняем сразу два поля!
+print(p.name)      # Андрей
+print(p.surname)   # Смирнов
+```
+
+Мы позволили менять `full_name`, и при этом внутри поменялись сразу два поля.
+
+**Зачем использовать `@property`?**
+
+- Инкапсуляция: можно защитить внутренние данные от прямого доступа.
+- Гибкость: код внешне не меняется, но логика может усложниться.
+- Контроль: можно валидировать данные при установке значения.
+
+**Пример с валидацией:**
+
+```python
+class Product:
+    def __init__(self, price):
+        self._price = price
+
+    @property
+    def price(self):
+        return self._price
+
+    @price.setter
+    def price(self, value):
+        if value < 0:
+            raise ValueError("Цена не может быть отрицательной")
+        self._price = value
+
+item = Product(100)
+item.price = 150     # Окей
+# item.price = -10   # Ошибка: ValueError
+```
 
 ## Практика
 
 Вы разрабатываете систему управления автомобилями, где каждый автомобиль имеет марку, модель и пробег. В этой системе требуется:
 
-1️. Использовать `@staticmethod` для проверки, является ли пробег корректным (например, он не должен быть отрицательным).
-2️. Использовать `@classmethod` для создания автомобиля с пробегом по умолчанию (новый авто).
-3️. Использовать `@property` и `@setter` для защиты пробега автомобиля — пробег может увеличиваться, но не уменьшаться.
+- 1️.Использовать `@staticmethod` для проверки, является ли пробег корректным (например, он не должен быть отрицательным).
+- 2️.Использовать `@classmethod` для создания автомобиля с пробегом по умолчанию (новый авто).
+- 3️.Использовать `@property` и `@setter` для защиты пробега автомобиля — пробег может увеличиваться, но не уменьшаться.
 
 **Ожидаемый результат работы кода**
 
