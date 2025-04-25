@@ -535,25 +535,21 @@ if not condition:
 
 Вместо обычного `assert`, `unittest` предоставляет специальные методы, которые делают тесты более понятными:
 
-`assertEqual(a, b)` – проверяет, что `a == b`.
-`assertTrue(x)` – проверяет, что `x` истинно (`True`).
-`assertFalse(x)` – проверяет, что `x` ложно (`False`).
-`assertIs(a, b)` – проверяет, что `a` и `b` – это один и тот же объект.
-`assertIsNone(x)` – проверяет, что `x` равно `None`.
-`assertIn(a, b)` – проверяет, что `a` содержится в `b`.
-`assertIsInstance(a, b)` – проверяет, что `a` является экземпляром `b`.
+- `assertEqual(a, b)` – проверяет, что `a == b`.
+- `assertTrue(x)` – проверяет, что `x` истинно (`True`).
+- `assertFalse(x)` – проверяет, что `x` ложно (`False`).
+- `assertIs(a, b)` – проверяет, что `a` и `b` – это один и тот же объект.
+- `assertIsNone(x)` – проверяет, что `x` равно `None`.
+- `assertIn(a, b)` – проверяет, что `a` содержится в `b`.
+- `assertIsInstance(a, b)` – проверяет, что `a` является экземпляром `b`.
 
-### Как запускать тесты?
-
-Запустить тесты можно тремя способами:
-
-#### 1. Запуск вручную (через unittest.main())
-
-Если в файле есть этот код:
+Простейший пример
+В корне нашего проекта создадим файл tests.py
 
 ```python
-#test_math_operations.py
+# tests.py
 import unittest
+
 
 class TestSum(unittest.TestCase):
     def test_sum(self):
@@ -565,8 +561,44 @@ class TestSum(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+```
+
+Обратите внимание, код заканчивается такими строками:
+
+```python
+if __name__ == '__main__':
+    unittest.main()
+```
+
+Тут это добавлено, для того что бы мы смогли напрямую, явно запустить этот файл как файл с тестами. В реальности так не делается, дальше покажу как делается.
+
+Теперь если мы запустим файл, в котором это написано, мы увидим следующее:
 
 ```
+Received test ids from temp file.
+test_sum (tests.test_unit.test_sum.TestSum.test_sum) ... ok
+test_sum_tuple (tests.test_unit.test_sum.TestSum.test_sum_tuple) ... FAIL
+
+======================================================================
+FAIL: test_sum_tuple (tests.test_unit.test_sum.TestSum.test_sum_tuple)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "e:\PythonCourses\Documents\practice\module2\tests\test_unit\test_sum.py", line 9, in test_sum_tuple
+    self.assertEqual(sum((1, 2, 2)), 6, "Should be 6")
+AssertionError: 5 != 6 : Should be 6
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.002s
+
+FAILED (failures=1)
+Finished running tests!
+```
+
+### Как запускать тесты?
+
+Запустить тесты можно тремя способами:
+
+#### 1. Запуск вручную (через unittest.main())
 
 То можно запустить тесты просто командой:
 
