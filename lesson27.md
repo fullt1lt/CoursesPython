@@ -352,7 +352,7 @@ urlpatterns = [
 
 <ul>
   {% for product in products %}
-    <li>{{ product.name }} — {{ product.price }} грн</li>
+    <li>{{ product.name }} — {{ product.price }}</li>
   {% empty %}
     <li>Нет доступных товаров.</li>
   {% endfor %}
@@ -376,7 +376,7 @@ urlpatterns = [
 Если вы не указали явно `template_name`, Django будет искать шаблон с именем по формуле:
 
 - `<имя_модели в нижнем регистре>_list.html`,
-- например: `product_list`.html.
+- например: `product_list.html`.
 - Но вы всегда можете указать путь к шаблону вручную.
 
 ### Как изменить набор объектов?
@@ -400,7 +400,7 @@ class CheapProductListView(ListView):
 
 **Что происходит:**
 
-- Мы переопределили метод `get_queryset()`, чтобы вернуть только те товары, у которых цена меньше 500 грн.
+- Мы переопределили метод `get_queryset()`, чтобы вернуть только те товары, у которых цена меньше 500.
 - Метод `filter(price__lt=500)` использует Django ORM для фильтрации по полю `price`.
 - `context_object_name = "products"` позволяет обращаться к списку объектов в шаблоне как к `products`.
 
@@ -594,7 +594,7 @@ urlpatterns = [
 ```html
 <!-- templates/products/product_detail.html -->
 <h1>{{ product.name }}</h1>
-<p>Цена: {{ product.price }} грн</p>
+<p>Цена: {{ product.price }}</p>
 <p>Описание: {{ product.description }}</p>
 <a href="{% url 'product_list' %}">← Назад к списку</a>
 ```
@@ -655,7 +655,7 @@ class ProductDetailView(DetailView):
 <h1>{{ title }}</h1>
 <p>Сегодня: {{ today }}</p>
 <p>Товар: {{ product.name }}</p>
-<p>Цена: {{ product.price }} грн</p>
+<p>Цена: {{ product.price }}</p>
 ```
 
 **Здесь:**
@@ -719,7 +719,7 @@ urlpatterns = [
 ```html
 <!-- templates/products/product_detail.html -->
 <h1>{{ product.name }}</h1>
-<p>Цена: {{ product.price }} грн</p>
+<p>Цена: {{ product.price }}</p>
 <p>Описание: {{ product.description }}</p>
 ```
 
@@ -728,6 +728,398 @@ urlpatterns = [
 - URL содержит `slug`, например: `/products/apple-iphone-15/`
 - Django получает значение `product_slug` из `URL` и ищет объект в базе: `Product.objects.get(slug="apple-iphone-15")`
 
-- Объект передаётся в шаблон под именем product.
+- Объект передаётся в шаблон под именем `product`.
 
 Такой подход используется во всех современных сайтах: для SEO, удобных ссылок и читаемости адресов.
+
+## Class CreateView
+
+[CreateView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.edit/CreateView/) — это обобщённое представление, которое:
+
+- автоматически создаёт HTML-форму на основе модели,
+- обрабатывает отправку формы (POST-запрос),
+- сохраняет новый объект в базу данных,
+
+перенаправляет пользователя на другую страницу (по умолчанию — на `get_absolute_url()`).
+
+**Простой пример: форма добавления нового товара**
+
+```python
+# views.py
+from django.views.generic.edit import CreateView
+from .models import Product
+
+class ProductCreateView(CreateView):
+    model = Product
+    template_name = "product_form.html"
+    fields = ["name", "price", "category"]  # добавили поле category
+    success_url = "/" # куда перенаправить после успешного создания, тут переходим на главную страницу
+```
+
+```python
+# urls.py
+from django.urls import path
+from .views import ProductCreateView
+
+urlpatterns = [
+    path("products/create/", ProductCreateView.as_view(), name="product_create"),
+]
+```
+
+```html
+<!-- templates/product_form.html -->
+<h1>Добавить товар</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Сохранить</button>
+</form>
+```
+
+**Как это работает:**
+
+- CreateView создаёт форму по указанным полям `(fields)`.
+- При GET-запросе отображает пустую форму.
+- При POST — валидирует, сохраняет объект и выполняет редирект.
+- `success_url` указывает, куда перейти после успешного сохранения.
+- Если у модели есть метод `get_absolute_url()`, `success_url` можно не указывать — он подставится автоматически.
+
+### Альтернатива: использовать form_class и ModelForm
+
+Иногда базового указания `fields = [...]` недостаточно.
+Например, ты хочешь:
+
+- кастомизировать поля (добавить `help_text`, `label`, `widget`, `attrs`),
+- изменить порядок полей,
+- добавить собственную валидацию.
+
+В таких случаях лучше использовать собственную `ModelForm`, а в `CreateView` подключить её через `form_class`.
+
+**Представление (views.py)**
+
+```python
+from django.views.generic.edit import CreateView
+from django.urls import reverse_lazy
+from .models import Product
+from .forms import ProductForm
+
+class ProductCreateView(CreateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "products/product_form.html"
+    success_url = reverse_lazy("home_page")  # редирект на главную после создания, еще один способ указать путь
+```
+
+**Пример формы (forms.py)**
+
+```python
+# forms.py
+from django import forms
+from .models import Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ["name", "price", "category"]
+        labels = {
+            "name": "Название товара",
+            "price": "Цена (крон)",
+            "category": "Категория"
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "price": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
+            "category": forms.Select(attrs={"class": "form-select"})
+        }
+```
+
+**Шаблон (product_form.html)**
+
+```html
+<h1>Добавить новый товар</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit" class="btn btn-primary">Сохранить</button>
+</form>
+```
+
+**Что даёт использование `form_class` и `ModelForm`:**
+
+- Возможность полностью контролировать внешний вид и поведение формы.
+
+- Более чистый и переиспользуемый код — можно подключить эту форму и в admin, и в других местах.
+
+- Простая реализация собственной валидации (`clean_<field>() `или `clean()`).
+
+#### Пример: собственная валидация через clean_price()
+
+Допустим, ты хочешь запретить сохранять товар с ценой меньше 1 кроны.
+
+**Обновим форму (forms.py)**
+
+```python
+from django import forms
+from .models import Product
+
+class ProductForm(forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ["name", "price", "category"]
+        labels = {
+            "name": "Название товара",
+            "price": "Цена (крон)",
+            "category": "Категория"
+        }
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "price": forms.NumberInput(attrs={"class": "form-control", "min": 0}),
+            "category": forms.Select(attrs={"class": "form-select"})
+        }
+
+    def clean_price(self):
+        price = self.cleaned_data.get("price")
+        if price is not None and price < 1:
+            raise forms.ValidationError("Цена должна быть не менее 1 кроны.")
+        return price
+```
+
+**Что здесь происходит:**
+
+- Метод `clean_price()` автоматически вызывается при валидации формы.
+- Если условие не проходит, Django подставит ошибку рядом с полем price в шаблоне.
+- Если всё в порядке — возвращаем значение поля.
+
+#### Можно сделать общую валидацию всех полей:
+
+Если проверка зависит от двух или более полей — используйте `def clean(self)`:
+
+```python
+def clean(self):
+    cleaned_data = super().clean()
+    price = cleaned_data.get("price")
+    name = cleaned_data.get("name")
+
+    if price == 999 and name == "Банан":
+        raise forms.ValidationError("Банан не может стоить 999 грн.")
+```
+
+Помимо базового использования, `CreateView` позволяет легко добавлять:
+
+- собственную логику до или после сохранения формы,
+- дополнительный контекст в шаблон,
+- собственную валидацию данных.
+
+#### Переопределение form_valid()
+
+Метод `form_valid(`) вызывается, если форма прошла валидацию. Мы можем переопределить его, чтобы добавить дополнительную логику до сохранения.
+
+Например, сохранить автора созданного объекта:
+
+```python
+class ProductCreateView(CreateView):
+    model = Product
+    fields = ["name", "price", "category"]
+    template_name = "products/product_form.html"
+    success_url = "/products/"
+
+    def form_valid(self, form):
+        form.instance.created_by = self.request.user  # добавим текущего пользователя
+        return super().form_valid(form)
+```
+
+**Здесь:**
+
+- `form.instance `— это ещё несохранённый объект модели.
+- Мы добавили поле `created_by` (предположим, оно есть в модели).
+- Затем вызываем родительский `form_valid`, чтобы сохранить объект и выполнить редирект.
+
+#### Добавление данных в шаблон через get_context_data()
+
+Как и в других `CBV`, ты можешь передать в шаблон дополнительные переменные:
+
+```python
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context["title"] = "Добавление нового товара"
+    return context
+```
+
+**В шаблоне:**
+
+```html
+<h1>{{ title }}</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Создать</button>
+</form>
+```
+
+#### Добавление кастомной валидации
+
+Если нужно провести дополнительную проверку — можно использовать `form.clean()` внутри `ModelForm`, или обработать прямо в `form_valid()`:
+
+```python
+def form_valid(self, form):
+    if form.cleaned_data["price"] <= 0:
+        form.add_error("price", "Цена должна быть больше нуля")
+        return self.form_invalid(form)  # не сохраняем, возвращаем форму с ошибкой
+    return super().form_valid(form) # обязательно вызываем родительский метод для сохранения
+```
+
+## Class UpdateView
+
+`UpdateView` — это обобщённое представление, предназначенное для:
+
+- отображения формы с уже заполненными данными объекта,
+- редактирования этих данных,
+- сохранения изменений в базу данных,
+- перенаправления пользователя на другую страницу после успешного обновления.
+
+Он очень похож на `CreateView`, но вместо создания нового объекта — редактирует существующий.
+
+**Пример: редактирование товара**
+
+```python
+# views.py
+from django.views.generic.edit import UpdateView
+from django.urls import reverse_lazy
+from .models import Product
+from .forms import ProductForm  # можно использовать ту же форму, что и для создания
+
+class ProductUpdateView(UpdateView):
+    model = Product
+    form_class = ProductForm
+    template_name = "products/product_form.html"
+    success_url = reverse_lazy("product_list")
+```
+
+```python
+# urls.py
+from django.urls import path
+from .views import ProductUpdateView
+
+urlpatterns = [
+    path("products/<int:pk>/edit/", ProductUpdateView.as_view(), name="product_edit"),
+]
+```
+**Что происходит:**
+
+- Django по `pk` находит объект в базе: `Product.objects.get(pk=...).`
+- Передаёт его в форму — поля будут автоматически заполнены текущими значениями.
+- Если форма прошла валидацию — объект сохраняется `(form.save())`, и выполняется редирект.
+- Форма и шаблон могут быть тем же самым, что и у `CreateView`.
+
+В шаблоне чтобы сформировать ссылку на редактирование товара, можно использовать тег `{% url %}`:
+
+```html
+<a href="{% url 'product_edit' product.pk %}">Редактировать</a>
+```
+
+### Как отличить CreateView и UpdateView в шаблоне
+
+Вы можете в `get_context_data()` добавить переменную `is_update`, чтобы в шаблоне отображались разные заголовки и кнопки:
+
+```python
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context["is_update"] = True
+    return context
+```
+
+```html
+<h1>
+  {% if is_update %} Редактировать товар
+  {% else %} Создать товар
+  {% endif %}
+</h1>
+```
+
+## Class DeleteView
+
+[DeleteView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.edit/DeleteView/) — это обобщённое представление, которое:
+
+- отображает страницу подтверждения удаления объекта,
+- удаляет объект из базы данных при POST-запросе,
+- перенаправляет пользователя на указанную страницу после удаления (success_url).
+
+**Пример: удаление товара**
+
+```python
+# views.py
+from django.views.generic.edit import DeleteView
+from django.urls import reverse_lazy
+from .models import Product
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    template_name = "product_confirm_delete.html"
+    success_url = reverse_lazy("product_list")
+```
+
+```python
+# urls.py
+from django.urls import path
+from .views import ProductDeleteView
+
+urlpatterns = [
+    path("products/<int:pk>/delete/", ProductDeleteView.as_view(), name="product_delete"),
+]
+```
+
+**Шаблон подтверждения (product_confirm_delete.html)**
+```html
+<!-- templates/product_confirm_delete.html -->
+<h1>Удалить товар "{{ object.name }}"?</h1>
+
+<form method="post">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Да, удалить</button>
+  <a href="{% url 'product_list' %}">Отмена</a>
+</form>
+```
+
+**Как это работает:**
+
+- При GET-запросе отображается страница подтверждения.
+- При POST-запросе объект удаляется `(object.delete())`.
+- После удаления происходит редирект на `success_url`.
+
+### Полезные атрибуты DeleteView
+
+- `model`	- Удаляемая модель
+- `template_name` - HTML-шаблон подтверждения
+- `success_url`	- Куда редиректить после удаления
+- `context_object_name`	- Как передать объект в шаблон (object по умолчанию)
+
+## Что делать, ели не нужен шаблон подтверждения?
+
+Иногда не хочется выводить отдельную страницу подтверждения удаления. Например, вы хотите удалить объект сразу по нажатию кнопки на детальной странице.
+
+В этом случае:
+
+- не указывайте `template_name`,
+- просто отправьте POST-запрос на URL удаления из любого шаблона.
+
+**Пример: форма удаления на странице `product_detail.html`**
+
+```html
+<form method="post" action="{% url 'product_delete' product.id %}">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-danger">Удалить товар</button>
+</form>
+```
+
+Представление остаётся тем же:
+
+```python
+class ProductDeleteView(DeleteView):
+    model = Product
+    success_url = reverse_lazy("product_list")
+    # template_name не указываем, чтобы не было страницы подтверждения
+```
+
+`Важно`: если будет выполнен `GET`-запрос, Django попытается отрендерить шаблон `product_confirm_delete.html`.Поэтому форма обязательно должна отправлять `POST`, иначе будет ошибка `TemplateDoesNotExist`
