@@ -804,32 +804,35 @@ CREATE TABLE articles (
 
 ![many-to-many.png](image/many-to-many.png)
 
-Один студент может посещать несколько курсов, и один курс может быть записан на нескольких студентов. Такая связь реализуется через промежуточную таблицу.
+Одна книга может быть написана несколькими авторами, и один автор может участвовать в создании нескольких книг. Такая связь реализуется через промежуточную таблицу BookAuthors.
 
 ```sql
-CREATE TABLE students (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
+CREATE TABLE Books (
+    BookID SERIAL PRIMARY KEY,
+    Title VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE courses (
-    id SERIAL PRIMARY KEY,
-    course_name VARCHAR(100) NOT NULL
+CREATE TABLE Authors (
+    AuthorID SERIAL PRIMARY KEY,
+    AuthorName VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE student_course (
-    student_id INT NOT NULL,
-    course_id INT NOT NULL,
-    PRIMARY KEY (student_id, course_id),
-    FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
+CREATE TABLE BookAuthors (
+    BookID INT NOT NULL,
+    AuthorID INT NOT NULL,
+    PRIMARY KEY (BookID, AuthorID),
+    FOREIGN KEY (BookID) REFERENCES Books(BookID) ON DELETE CASCADE,
+    FOREIGN KEY (AuthorID) REFERENCES Authors(AuthorID) ON DELETE CASCADE
 );
 ```
 
 **Что здесь важно?**
 
-- `PRIMARY KEY` (`student_id`, `course_id`) – гарантирует уникальность пар.
-- `ON DELETE CASCADE` – если удалить студента, он исчезнет из всех курсов.
+- `PRIMARY KEY` (`BookID`, `AuthorID`) — задаёт составной первичный ключ, чтобы одна и та же пара книга-автор не могла быть записана дважды.
+
+- `ON DELETE CASCADE` — если удалить книгу, все записи об авторах этой книги в `BookAuthors` удалятся автоматически (и наоборот).
+
+- Таблица `BookAuthors` — это связующая таблица, реализующая связь "многие ко многим".
 
 ### Самоссылочные связи (Self-Referenced Relationships)
 
@@ -857,8 +860,8 @@ CREATE TABLE employee
 
 ### Важность соблюдения ссылочной целостности
 
-Ссылочная целостность обеспечивает корректность и непротиворечивость данных. В PostgreSQL для этого используются
-ограничения внешних ключей (FOREIGN KEY), которые позволяют следить за тем, чтобы ссылки между таблицами оставались
+Ссылочная целостность обеспечивает корректность и непротиворечивость данных. В `PostgreSQL` для этого используются
+ограничения внешних ключей (`FOREIGN KEY`), которые позволяют следить за тем, чтобы ссылки между таблицами оставались
 корректными.
 
 Пример нарушения ссылочной целостности:
@@ -1012,3 +1015,4 @@ FROM students
 WHERE id = 1;
 -- Возвращает ошибку и предотвращает удаление
 ```
+
