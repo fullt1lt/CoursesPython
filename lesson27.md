@@ -972,7 +972,7 @@ def form_valid(self, form):
 
 ## Class UpdateView
 
-`UpdateView` — это обобщённое представление, предназначенное для:
+[UpdateView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.edit/UpdateView/) — это обобщённое представление, предназначенное для:
 
 - отображения формы с уже заполненными данными объекта,
 - редактирования этих данных,
@@ -1038,6 +1038,152 @@ def get_context_data(self, **kwargs):
 </h1>
 ```
 
+## Class FormView
+
+[FormView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.edit/CreateView/) — это представление на основе класса, которое позволяет работать с обычной HTML-формой: отобразить её пользователю, обработать введённые данные, проверить валидность и выполнить нужные действия. Главное отличие от `CreateView` и `UpdateView` заключается в том, что `FormView` не привязан к конкретной модели. Это значит, что мы сами решаем, что делать с введёнными данными: сохранить, отправить на email, записать в лог или просто вывести на экран.
+
+Если у нас есть форма, но мы не хотим автоматически создавать или обновлять объект модели — `FormView` будет правильным выбором.
+
+### Где используется FormView?
+
+`FormView` особенно полезен в таких ситуациях:
+
+- форма обратной связи (контактная форма),
+- подписка на рассылку,
+- фильтрация данных,
+- поиск по сайту,
+- форма загрузки файла, если обработка идёт вручную.
+
+Это чистый, контролируемый способ обрабатывать данные формы без привязки к `ModelForm` и базе данных.
+
+**Пример: форма обратной связи**
+
+Представим, что мы хотим сделать страницу, где пользователь может оставить своё имя и сообщение. Эти данные сохраняются не в базу, а, например, отправляются по email или выводятся в консоль.
+
+Сначала создадим форму:
+
+```python
+# forms.py
+from django import forms
+
+class ContactForm(forms.Form):
+    name = forms.CharField(label="Ваше имя", max_length=100)
+    message = forms.CharField(label="Сообщение", widget=forms.Textarea)
+```
+
+Теперь создадим представление:
+
+```python
+# views.py
+from django.views.generic.edit import FormView
+from django.urls import reverse_lazy
+from .forms import ContactForm
+
+class ContactFormView(FormView):
+    template_name = "contact_form.html"
+    form_class = ContactForm
+    success_url = reverse_lazy("home_page")  # перенаправим на главную после отправки формы
+
+    def form_valid(self, form):
+        # Здесь можно отправить email, записать лог, уведомить администратора и т.д.
+        print("Новое сообщение от:", form.cleaned_data["name"])
+        print("Текст сообщения:", form.cleaned_data["message"])
+        return super().form_valid(form)
+```
+
+В `urls.py` подключим маршрут:
+
+```python
+# urls.py
+from django.urls import path
+from .views import ContactFormView
+
+urlpatterns = [
+    path("contact/", ContactFormView.as_view(), name="contact"),
+]
+```
+
+И создадим шаблон `contact_form.html`:
+
+```html
+<h1>Форма обратной связи</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Отправить</button>
+</form>
+```
+
+**Что происходит под капотом?**
+
+Когда пользователь переходит на страницу `/contact/`, `FormView` обрабатывает `GET`-запрос, создаёт объект формы и отображает шаблон с этой формой. Когда пользователь отправляет данные (нажимает кнопку), браузер отправляет `POST`-запрос. Внутри `FormView` выполняются такие шаги:
+
+- Создаётся экземпляр формы с данными из `POST`.
+- Выполняется проверка `.is_valid()`.
+- Если данные корректны, вызывается метод `form_valid()`.
+- Если в форме ошибка — вызывается `form_invalid()` и шаблон отображается снова с сообщениями об ошибках.
+- Если `form_valid()` отработал успешно — происходит перенаправление на `success_url`.
+
+Таким образом, ты получаешь очень простую, но мощную структуру: только нужная логика, никакой привязки к моделям.
+
+### Как задать начальные значения в форму?
+
+Иногда нужно заранее заполнить некоторые поля формы, например, имя текущего пользователя. Это можно сделать, переопределив метод `get_initial()`:
+
+```python
+def get_initial(self):
+    return {
+        "name": self.request.user.username  # авто-заполнение имени
+    }
+```
+
+### Как добавить данные в шаблон?
+
+Если мы хотим передать в шаблон дополнительные переменные (например, заголовок страницы), можем переопределить `get_context_data()`:
+
+```python
+def get_context_data(self, **kwargs):
+    context = super().get_context_data(**kwargs)
+    context["title"] = "Связаться с нами"
+    return context
+```
+
+И в шаблоне:
+
+```html
+<h1>{{ title }}</h1>
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Отправить</button>
+</form>
+```
+
+### Что делать в form_valid()?
+
+Этот метод вызывается, когда форма прошла валидацию. Мы можем сделать всё, что угодно:
+
+- отправить письмо,
+- сделать запись в лог,
+- вызвать внешний `API`,
+- записать что-то вручную в базу.
+
+Пример:
+
+```python
+def form_valid(self, form):
+    name = form.cleaned_data["name"]
+    message = form.cleaned_data["message"]
+    
+    # Псевдо-отправка email
+    send_email_to_support(name, message)
+
+    return super().form_valid(form)
+```
+
+`FormView` — это мощное, но очень простое средство для работы с формами, когда нам не нужно создавать объекты в базе. Мы полностью контролируем поведение формы и можем сосредоточиться на бизнес-логике.Если `CreateView` и `UpdateView` завязаны на модели, `FormView` даёт нам полную свободу — форма может быть любой, а действия по отправке — абсолютно произвольными.
+
 ## Class DeleteView
 
 [DeleteView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.edit/DeleteView/) — это обобщённое представление, которое:
@@ -1095,7 +1241,7 @@ urlpatterns = [
 - `success_url`	- Куда редиректить после удаления
 - `context_object_name`	- Как передать объект в шаблон (object по умолчанию)
 
-## Что делать, ели не нужен шаблон подтверждения?
+## Что делать, еcли не нужен шаблон подтверждения?
 
 Иногда не хочется выводить отдельную страницу подтверждения удаления. Например, вы хотите удалить объект сразу по нажатию кнопки на детальной странице.
 
@@ -1123,3 +1269,769 @@ class ProductDeleteView(DeleteView):
 ```
 
 `Важно`: если будет выполнен `GET`-запрос, Django попытается отрендерить шаблон `product_confirm_delete.html`.Поэтому форма обязательно должна отправлять `POST`, иначе будет ошибка `TemplateDoesNotExist`
+
+## Class RedirectView
+
+В Django [RedirectView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.base/RedirectView/) — это специальный класс-представление, задача которого — перенаправить пользователя с одного URL на другой. Это очень простой и лёгкий способ задать редирект без необходимости писать функцию или логику вручную.
+
+Такой класс удобно использовать, когда нам не нужно отображать страницу, а нужно просто сказать браузеру:
+«Эта страница больше не здесь — перейди туда-то».
+
+**Зачем и когда использовать RedirectView?**
+
+- Например, мы перенёсли главную страницу сайта с `/home/` на `/`, но хотим сохранить старый адрес, чтобы не было ошибки `404`.
+- Или у нас есть устаревший URL `/about-old/`, который теперь должен вести на `/about/`.
+- Также можно сделать временное перенаправление на внешние сайты (например, документацию).
+- Или просто перекидывать пользователей на главную после входа или выхода с сайта.
+
+Во всех этих случаях мы можем использовать `RedirectView`, и нам не нужно писать собственную логику — всё уже встроено.
+
+**Простой пример: редирект со страницы `/main/` на `/`**
+
+Допустим, у нас есть URL `/main/`, но мы хотим, чтобы пользователь при переходе на этот адрес автоматически попадал на домашнюю страницу.
+
+```python
+# views.py
+from django.views.generic.base import RedirectView
+from django.urls import reverse_lazy
+
+class HomeRedirectView(RedirectView):
+    url = reverse_lazy("home_page")  # указываем имя маршрута, на который надо перенаправить
+```
+
+**Теперь добавим маршрут:**
+
+```python
+# urls.py
+from django.urls import path
+from .views import HomeRedirectView
+
+urlpatterns = [
+    path("main/", HomeRedirectView.as_view(), name="main_redirect"),
+]
+```
+
+**Что произойдёт:**
+
+Пользователь заходит по адресу `http://example.com/main/`, и его автоматически перенаправляют на `http://example.com/` — то есть на домашнюю страницу. Никакого HTML-шаблона не нужно, потому что страница даже не загружается — браузер сразу делает переход на другой адрес.
+
+### Временное и постоянное перенаправление
+
+По умолчанию `RedirectView` делает временный редирект — это значит, что браузер считает страницу временно перемещённой (`HTTP-код 302`).
+Если мы хотим сделать постоянный редирект (`HTTP-код 301`), например для SEO, можно добавить параметр `permanent = True`:
+
+```python
+class HomeRedirectView(RedirectView):
+    url = reverse_lazy("home_page")
+    permanent = True  # теперь редирект будет постоянным
+```
+
+### Как сделать редирект с параметрами (pk, slug)?
+
+Если тебе нужно перенаправить пользователя на страницу конкретного объекта, можно использовать `pattern_name` вместо `url`. В этом случае ты указываешь имя маршрута, в который автоматически подставятся аргументы из URL.
+
+Допустим, у нас есть страница `/go-to-product/3/`, и мы хотим, чтобы она перенаправляла на страницу товара с `ID = 3`.
+
+```python
+# urls.py
+from django.urls import path
+from .views import ProductRedirectView
+
+urlpatterns = [
+    path("go-to-product/<int:pk>/", ProductRedirectView.as_view(), name="product_go"),
+]
+```
+
+```python
+# views.py
+class ProductRedirectView(RedirectView):
+    pattern_name = "product_detail"  # имя маршрута, куда происходит редирект
+```
+
+Когда пользователь откроет `/go-to-product/3/`, Django выполнит `reverse("product_detail", kwargs={"pk": 3})` и перенаправит его на страницу `/products/3/`.
+
+## Class LoginView
+
+[LoginView](https://ccbv.co.uk/projects/Django/4.2/django.contrib.auth.views/LoginView/) — это встроенное представление Django, которое отвечает за аутентификацию пользователей. Оно автоматически:
+
+- отображает HTML-форму для ввода логина и пароля,
+- обрабатывает `POST`-запрос с учётными данными,
+- проверяет пользователя через `authenticate()`,
+- выполняет вход с помощью `login()`,
+- и перенаправляет пользователя на нужную страницу.
+
+И всё это — без необходимости писать кучу ручного кода. `LoginView` — это стандартный способ реализовать форму входа на сайт.
+
+### Когда использовать LoginView?
+
+Когда нам нужно:
+
+- создать страницу авторизации на сайте,
+- выполнить вход пользователя в систему,
+- использовать встроенную сессию Django и хранение состояния входа.
+
+Django уже предоставляет готовый функционал, и нам не нужно реализовывать всё вручную.
+
+**Простой пример авторизации**
+
+Напишем представление, которое будет обрабатывать вход пользователя:
+
+```python
+# views.py
+from django.contrib.auth.views import LoginView
+from django.urls import reverse_lazy
+
+class CustomLoginView(LoginView):
+    template_name = "login.html"  # Шаблон с формой входа
+    redirect_authenticated_user = True  # Уже вошедших перенаправим на главную
+    next_page = reverse_lazy("home")  # Куда перейти после входа
+```
+
+Подключим представление входа в `urls.py`:
+
+```python
+# urls.py
+from django.urls import path
+from .views import CustomLoginView
+
+urlpatterns = [
+    path("login/", CustomLoginView.as_view(), name="login"),
+]
+```
+
+Всё! Теперь при переходе на `/login/` Django отобразит форму логина.
+
+Но чтобы форма корректно отобразилась, нужен шаблон по умолчанию — `login.html`.
+
+Создим файл templates/login.html и добавим туда:
+
+```html
+<h1>Вход на сайт</h1>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.as_p }}
+  <button type="submit">Войти</button>
+</form>
+```
+
+Если пользователь введёт корректные данные, он будет автоматически авторизован, и его сессия будет активна.
+
+**Что происходит при логине?**
+
+- Пользователь отправляет `POST` с логином и паролем.
+- Django вызывает `authenticate(username=..., password=...)`.
+- Если учётные данные корректны — вызывается `login()` и создаётся сессия.
+- Затем пользователь перенаправляется на `next` или `LOGIN_REDIRECT_URL`.
+
+### Что происходит при повторном входе?
+
+Если пользователь уже авторизован и снова заходит на `/login/`, он по умолчанию всё равно увидит форму входа. Это может быть не очень удобно — ведь пользователь уже *"в системе"*.
+
+Чтобы избежать этого, мы используем параметр `redirect_authenticated_user = True`. Тогда если пользователь уже вошёл, `LoginView` просто перенаправит его на адрес, указанный в `next_page`, либо в `LOGIN_REDIRECT_URL`.
+
+### Куда редиректить после входа?
+
+Есть три способа задать страницу, куда пользователь попадёт после успешного входа:
+
+#### 1.Через next_page в LoginView
+
+```python
+class CustomLoginView(LoginView):
+    template_name = "login.html"
+    redirect_authenticated_user = True
+    next_page = reverse_lazy("home")
+```
+
+Здесь пользователь после входа будет перенаправлен на страницу `home`, независимо от того, с какой страницы он пришёл.
+
+#### 2. Через настройку в settings.py
+
+```python
+# settings.py
+LOGIN_REDIRECT_URL = "/"
+```
+
+Если в `LoginView` не указан `next_page`, Django будет использовать `LOGIN_REDIRECT_URL` по умолчанию.
+
+### Кастомизация формы логина
+
+Если мы хотим изменить внешний вид формы или добавить стили, можно создать свою форму на основе `AuthenticationForm`:
+
+```python
+# forms.py
+from django.contrib.auth.forms import AuthenticationForm
+from django import forms
+
+class StyledLoginForm(AuthenticationForm):
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Логин"})
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Пароль"})
+    )
+```
+
+Теперь подключим эту форму в `LoginView`:
+
+```python
+class CustomLoginView(LoginView):
+    template_name = "login.html"
+    authentication_form = StyledLoginForm
+    next_page = reverse_lazy("home")
+```
+
+### Обработка успешного входа вручную
+
+Если нам нужно выполнить какие-то действия после успешной авторизации (например, залогировать вход или показать сообщение), мы можем переопределить метод `form_valid()`:
+
+```python
+def form_valid(self, form):
+    user = form.get_user()
+    print("Пользователь вошёл:", user.username)
+    return super().form_valid(form)
+```
+
+### Что если логин неудачен?
+
+Если пользователь ввёл неверные данные, Django вызовет метод `form_invalid()` и снова отобразит форму с сообщениями об ошибках. Все сообщения уже встроены в `AuthenticationForm`, нам ничего дополнительно делать не нужно. Но так же  — можно подключить `messages` и добавить свои уведомления.
+
+### Полезные параметры `LoginView`
+
+| Атрибут                    | Что делает                                                                 |
+|----------------------------|---------------------------------------------------------------------------|
+| `template_name`            | Путь к шаблону формы входа                                                |
+| `next_page`                | Адрес редиректа после логина                                              |
+| `redirect_authenticated_user` | Не показывать форму, если пользователь уже вошёл                          |
+| `authentication_form`      | Класс формы логина (можно кастомизировать поля, стили и поведение)        |
+
+`LoginView` — это мощный инструмент, который позволяет быстро и безопасно реализовать вход пользователя. Всё, что нам нужно:
+
+- создать шаблон с формой,
+- подключить `LoginView` в `urls.py`,
+- если нужно - переопределить `form_valid()`,
+- при необходимости настроить `redirect`, форму, шаблон или поведение.
+
+И при этом мы не пишем ни одной строчки логики входа — всё уже реализовано внутри Django.
+
+## Class LogoutView
+
+[LogoutView](https://ccbv.co.uk/projects/Django/4.2/django.contrib.auth.views/LogoutView/) — это встроенное представление Django, которое отвечает за выход пользователя из системы. Когда пользователь обращается к этому view, Django:
+
+- завершает текущую сессию пользователя,
+- удаляет информацию о нём из request.user,
+- и перенаправляет его на заданную страницу.
+
+Это представление не требует формы, и может быть вызвано даже простым GET-запросом. Вся логика выхода уже реализована — нам нужно только подключить маршрут и при необходимости указать, куда перенаправить пользователя после выхода.
+
+Подключим `LogoutView` в `urls.py`:
+
+```python
+# urls.py
+from django.urls import path
+from django.contrib.auth.views import LogoutView
+
+urlpatterns = [
+    path("logout/", LogoutView.as_view(), name="logout"),
+]
+```
+
+Теперь, если пользователь перейдёт по `/logout/`, он будет автоматически выведен из системы.
+
+**По умолчанию происходит следующее:**
+
+- Пользовательская сессия удаляется.
+- `request.user` становится `AnonymousUser`.
+- После этого Django перенаправляет пользователя на `/accounts/logout/`, если ты не указал другой адрес.
+
+Чтобы изменить это поведение, нужно явно указать, куда перенаправлять после выхода.
+
+### Куда редиректить после выхода?
+
+Есть два способа:
+
+**1. Указать `next_page` в `LogoutView`**
+
+```python
+path("logout/", LogoutView.as_view(next_page="home_page"), name="logout")
+```
+Здесь next_page — это имя URL, на который будет выполнен редирект.
+
+**2. Установить `LOGOUT_REDIRECT_URL` в `settings.py`**
+
+```python
+# settings.py
+LOGOUT_REDIRECT_URL = "/"
+```
+
+Если `next_page` не указан в `LogoutView`, Django будет использовать `LOGOUT_REDIRECT_URL`.
+
+### Разметка для выхода из аккаунта
+
+Создадим кнопку или ссылку для выхода из аккаунта:
+
+```html
+<a href="{% url 'logout' %}">Выйти</a>
+```
+
+Или форма, если нужно сделать POST-запрос (в целях безопасности):
+
+```html
+<form method="post" action="{% url 'logout' %}">
+  {% csrf_token %}
+  <button type="submit">Выйти</button>
+</form>
+```
+
+По умолчанию `LogoutView` разрешает и `GET`, и `POST` запросы. Если мы хотим, чтобы выход происходил только по `POST` (например, ради защиты от CSRF), мы можем обернуть `LogoutView` в собственное представление и разрешить только `POST`.
+
+### Как ограничить метод выхода?
+
+Если нам важно, чтобы пользователь выходил только через `POST` (например, через кнопку, а не через ссылку), можем сделать вот так:
+
+```python
+# views.py
+from django.contrib.auth.views import LogoutView
+from django.views.decorators.http import require_POST
+from django.utils.decorators import method_decorator
+
+@method_decorator(require_POST, name='dispatch')
+class SecureLogoutView(LogoutView):
+    next_page = "home_page"
+```
+
+И в `urls.py`:
+
+```python
+path("logout/", SecureLogoutView.as_view(), name="logout"),
+```
+
+Теперь попытка выйти по ссылке `(GET)` вызовет ошибку `405 Method Not Allowed`, и пользователь сможет выйти только через кнопку с POST-запросом.
+
+### Основные параметры `LogoutView`
+
+| Атрибут        | Описание                                                                 |
+|----------------|--------------------------------------------------------------------------|
+| `next_page`    | Куда перенаправить после выхода (можно указать URL или имя маршрута)    |
+| `template_name`| Если не перенаправлять, можно отобразить страницу *"Вы вышли из системы"* |
+| `extra_context`| Дополнительные переменные в шаблон (если используется `template_name`)  |
+
+### Пример: отображение страницы после выхода
+
+Иногда вместо редиректа нужно показать пользователю страницу с сообщением `"Вы успешно вышли из аккаунта"`. Тогда не нужно использовать `next_page`, а нужно использовать `template_name`:
+
+```python
+# views.py
+from django.contrib.auth.views import LogoutView
+
+class LogoutDisplayView(LogoutView):
+    template_name = "users/logout_success.html"
+```
+
+```python
+# urls.py
+path("logout/", LogoutDisplayView.as_view(), name="logout"),
+```
+
+И создать шаблон:
+
+```html
+<!-- templates/logout_success.html -->
+<h1>Вы вышли из аккаунта</h1>
+<p>Спасибо за посещение сайта. До скорой встречи!</p>
+<a href="{% url 'home_page' %}">На главную</a>
+```
+
+`LogoutView` — это самый простой способ реализовать выход пользователя. Всё, что нужно:
+
+- подключить маршрут,
+- задать `next_page` или `template_name`,
+- и сделать кнопку выхода в шаблоне.
+
+Если нам нужно, чтобы выход происходил строго через `POST` — можно легко переопределить поведение через декоратор `@require_POST`. Если нужно кастомизировать страницу выхода — просто укажи `template_name` и создай свой шаблон. Всё остальное уже реализовано в Django.
+
+### Регистрация
+
+По сути регистрация - это `CreateView` со своими особенностями (пароль хешируется), поэтому для регистрации используют просто `CreateView`, и существует заранее описанная форма `UserCreationForm`()
+
+    
+```python
+class UserCreationForm(forms.ModelForm):
+    """
+    A form that creates a user, with no privileges, from the given username and
+    password.
+    """
+    error_messages = {
+        'password_mismatch': _("The two password fields didn't match."),
+    }
+    password1 = forms.CharField(label=_("Password"),
+                                widget=forms.PasswordInput)
+    password2 = forms.CharField(label=_("Password confirmation"),
+                                widget=forms.PasswordInput,
+                                help_text=_("Enter the same password as above for verification."))
+
+    class Meta:
+        model = User
+        fields = ("username",)
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise forms.ValidationError(
+                self.error_messages['password_mismatch'],
+                code='password_mismatch',
+            )
+        return password2
+
+    def save(self, commit=True):
+        user = super(UserCreationForm, self).save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+```
+
+Принимает `username` и два раза пароль, проверяет, чтобы пароли были одинаковые, и при сохранении записывает пароль в хешированном виде.
+
+## Управление доступом в Django
+
+Управление доступом — это важнейший аспект безопасности и логики любого веб-приложения. Оно позволяет ограничить, кто и когда может просматривать, изменять или удалять ресурсы на сайте. В Django для этой цели есть целый набор встроенных инструментов: декораторы, права доступа (`permissions`), группы пользователей и специальные mixin-классы, которые легко комбинируются с `Class-Based Views`.
+
+В этой лекции мы сосредоточимся на модульном управлении доступом с помощью миксинов, которые идеально подходят для CBV. Однако перед этим давай кратко посмотрим, как работает доступ в FBV и почему подход с миксинами — более удобный для классовых представлений.
+
+### Декораторы для функциональных представлений
+
+Когда мы пишем обычные представления на функциях `(FBV)`, доступ часто ограничивается при помощи декораторов:
+
+```python
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def profile_view(request):
+    ...
+```
+
+Здесь `@login_required` не позволит неавторизованному пользователю открыть страницу. В случае необходимости можно использовать и другие декораторы: `@permission_required`, `@user_passes_test`, и так далее.
+
+### Почему декораторы не подходят напрямую к `CBV`?
+
+В `CBV` мы не можем просто так написать:
+
+```python
+@login_required
+class MyView(View):  # так не работает
+    ...
+```
+
+Потому что `@login_required` ожидает функцию, а не класс. В классовых представлениях, вместо этого, используется метод `dispatch()`, который вызывается при любом `HTTP`-запросе (`GET`, `POST` и др.). И именно его мы можем обернуть через `@method_decorator`.
+
+**Пример: как применить декоратор к CBV**
+
+```python
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.views.generic import ListView
+from .models import Post
+
+@method_decorator(login_required, name='dispatch')
+class PostListView(ListView):
+    model = Post
+    template_name = 'post_list.html'
+```
+
+Здесь:
+
+`@method_decorator` применяется к методу `dispatch`, который вызывает соответствующий обработчик (`get()`, `post()` и т.д.),
+
+Таким образом, весь класс `PostListView` защищён: только авторизованные пользователи смогут просматривать страницу.
+
+### Альтернатива — использовать mixin-классы
+
+Хотя `method_decorator` — это корректный способ, в мире `CBV` гораздо удобнее и чище использовать специальные миксины, такие как `LoginRequiredMixin`, `PermissionRequiredMixin`, `UserPassesTestMixin`.
+
+Они:
+
+- подключаются через наследование,
+- не требуют оборачивания методов вручную,
+- работают во всех `CBV` из коробки.
+
+Дальше мы подробно рассмотрим, как с ними работать и в каких случаях каждый из них использовать.
+
+## LoginRequiredMixin
+
+[LoginRequiredMixin](https://ccbv.co.uk/projects/Django/4.2/django.contrib.auth.mixins/LoginRequiredMixin/) — это специальный миксин (наследуемый класс), который позволяет легко ограничить доступ к представлению только для авторизованных пользователей. Если пользователь не вошёл в систему, он будет автоматически перенаправлен на страницу логина. Это поведение похоже на декоратор `@login_required`, но предназначено именно для `Class-Based Views`.
+
+**Простой пример**
+
+```python
+# views.py
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import TemplateView
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = "users/profile.html"
+```
+
+Теперь, если пользователь не авторизован, и он попытается перейти на `/profile/`, Django не покажет страницу — вместо этого произойдёт редирект на страницу входа.
+
+**Важно: порядок наследования**
+
+`LoginRequiredMixin` должен всегда указываться первым в списке наследования. Это связано с порядком разрешения методов `(Method Resolution Order — MRO)` в Python:
+
+```python
+
+# Правильно 
+class MyView(LoginRequiredMixin, DetailView):
+    ...
+
+# Неправильно 
+class MyView(DetailView, LoginRequiredMixin):  # mixin не сработает
+    ...
+```
+
+### Как указать, куда редиректить?
+
+По умолчанию, если пользователь не авторизован, Django будет редиректить его на /accounts/login/.
+
+Мы можем изменить этот путь двумя способами:
+
+**1. Через settings.py**
+
+```python
+LOGIN_URL = "/login/"
+```
+
+**2. Через атрибут login_url в представлении**
+
+```python
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = "users/profile.html"
+    login_url = "/custom-login/"  # переопределение только для этого view
+```
+
+#### Пример с DetailView
+
+```python
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.generic import DetailView
+from .models import Product
+
+class ProductDetailView(LoginRequiredMixin, DetailView):
+    model = Product
+    template_name = "products/product_detail.html"
+    context_object_name = "product"
+    login_url = "/login/"  # редирект если пользователь не авторизован
+```
+**Почему это лучше, чем @method_decorator?**
+
+- Код чище и проще.
+- Поведение читается «по названию» — `LoginRequiredMixin` сразу говорит о себе.
+- Не нужно оборачивать `dispatch` вручную.
+- Можно комбинировать с другими миксинами, например: `UserPassesTestMixin`, `PermissionRequiredMixin`.
+
+#### Дополнительный функционал
+
+Если мы хотим, чтобы уже авторизованный пользователь не попадал на страницу логина, можно использовать в паре с `LoginView` параметр `redirect_authenticated_user = True`. Таким образом, после входа он не сможет снова зайти на `/login/`, если уже вошёл.
+
+## PermissionRequiredMixin
+
+[PermissionRequiredMixin](https://ccbv.co.uk/projects/Django/4.2/django.contrib.auth.mixins/PermissionRequiredMixin/) — это миксин, который позволяет ограничить доступ к представлению только для пользователей, обладающих определёнными разрешениями (`permissions`).
+
+Этот подход особенно полезен:
+
+- в административных разделах сайта,
+- при реализации системы ролей и групп,
+- когда нужно разграничить права (например, одни могут просматривать, другие — редактировать или удалять объекты).
+
+**Пример использования**
+
+```python
+# views.py
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.views.generic import ListView
+from .models import Product
+
+class ProductAdminListView(PermissionRequiredMixin, ListView):
+    model = Product
+    template_name = "products/admin_product_list.html"
+    context_object_name = "products"
+    permission_required = "shop.view_product"
+```
+
+В этом примере:
+
+- Только пользователи с правом `view_product` из приложения `shop` смогут открыть страницу.
+- Остальные увидят ошибку `403 Forbidden`.
+
+### Где появляются права?
+
+Django автоматически создаёт 4 базовых разрешения для каждой модели, если у неё включён `permissions` (включены по умолчанию).
+
+Например, если у нас есть такая модель:
+
+```python
+# models.py
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=8, decimal_places=2)
+```
+
+Django автоматически создаст следующие права:
+
+- add_product — право создавать (используется в админке и в CreateView)
+- change_product — право редактировать (UpdateView)
+- delete_product — право удалять (DeleteView)
+- view_product — право просматривать (DetailView, ListView, API)
+
+Эти права создаются при `makemigrations` и `migrate`.
+
+#### Как выдать права пользователю?
+
+Через админку Django:
+
+- Зайти в `/admin/`
+- Открыть пользователя, которому хотим выдать права.
+- Внизу будет поле `"Права пользователя"`.
+- Найти, например, `"Can view product"`, `"Can change product"` и т.д.
+- Добавить и сохранить.
+
+Через код:
+
+```python
+user = User.objects.get(username='admin')
+user.user_permissions.add(Permission.objects.get(codename='view_product'))
+```
+
+Главное не забыть импортировать:
+
+```python
+from django.contrib.auth.models import Permission, User
+```
+
+### Как посмотреть список всех прав?
+
+Через Django shell:
+
+```bash
+python manage.py shell
+```
+
+```python
+from django.contrib.auth.models import Permission
+Permission.objects.filter(content_type__app_label='your_app_name')
+```
+
+### Как задать свои кастомные права?
+
+В модели можно указать дополнительные (нестандартные) права, если нужно что-то специфическое:
+
+```python
+class Product(models.Model):
+    ...
+
+    class Meta:
+        permissions = [
+            ("can_publish", "Может публиковать продукт"),
+            ("can_export", "Может экспортировать в PDF"),
+        ]
+```
+
+После добавления — сделай `makemigrations` и `migrate`, и они появятся в админке.
+
+### Примеры использования прав
+
+Проверка вручную:
+
+```python
+if request.user.has_perm("shop.view_product"):
+    ...
+```
+
+Ограничение через `PermissionRequiredMixin`:
+
+```python
+class ProductAdminListView(PermissionRequiredMixin, ListView):
+    model = Product
+    permission_required = "shop.view_product"
+    raise_exception = True
+```
+
+`raise_exception = True` — это значит, что если у пользователя нет прав, он увидит ошибку `403 Forbidden`, а не будет перенаправлен на страницу логина.
+
+
+## UserPassesTestMixin — гибкая проверка доступа
+
+[UserPassesTestMixin](https://ccbv.co.uk/projects/Django/4.2/django.contrib.auth.mixins/UserPassesTestMixin/) используется, когда тебе нужно реализовать свою собственную логику проверки прав доступа, которую нельзя выразить через стандартные разрешения (`permissions`) или простой вход в систему (`LoginRequiredMixin`).
+
+Это может быть, например:
+
+- «пользователь должен быть автором объекта»,
+- «пользователь должен быть суперадмином»,
+- «пользователь должен принадлежать к определённой группе»,
+- «объект не должен быть архивным» и т.п.
+
+### Как работает?
+
+Ты наследуешь `UserPassesTestMixin` и реализуешь метод `test_func()`. Он должен вернуть `True`, если доступ разрешён, и `False`, если нет. Если метод вернёт `False`, Django автоматически покажет ошибку `403 Forbidden`.
+
+**Пример: доступ только автору объекта**
+
+```python
+from django.contrib.auth.mixins import UserPassesTestMixin
+from django.views.generic import UpdateView
+from .models import Product
+
+class ProductUpdateView(UserPassesTestMixin, UpdateView):
+    model = Product
+    fields = ["name", "price", "category"]
+    template_name = "products/product_form.html"
+    success_url = "/products/"
+
+    def test_func(self):
+        product = self.get_object()
+        return self.request.user == product.created_by  # доступ только автору
+```
+
+Здесь `get_object()` получает текущий объект модели `Product`, а затем мы сравниваем, совпадает ли текущий пользователь с автором этого объекта.
+
+### Переопределение handle_no_permission()
+
+Если нам не нравится стандартный ответ `403`, мы можем переопределить метод `handle_no_permission()` и, например, сделать редирект:
+
+```python
+from django.shortcuts import redirect
+
+def handle_no_permission(self):
+    return redirect("home_page")
+```
+
+Хорошим решением будет создать свой Миксин на основе `UserPassesTestMixin`:
+
+```python
+from django.contrib.auth.mixins import UserPassesTestMixin
+
+
+class SuperUserRequiredMixin(UserPassesTestMixin):
+    
+    def test_func(self):
+        return self.request.user.is_superuser
+```
+
+Тут мы проверяем, является ли пользователь суперпользователем. Теперь его можно использовать в любом представлении:
+
+```python
+class MyView(SuperUserRequiredMixin, TemplateView):
+    template_name = "admin.html"
+```
+
+### Комбинация с LoginRequiredMixin
+
+`UserPassesTestMixin` не требует, чтобы пользователь был авторизован. Если мы хотим, чтобы проверка выполнялась только для вошедших пользователей, обязательно используй `LoginRequiredMixin`:
+
+```python
+class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    ...
+```
+
+Порядок важен: `LoginRequiredMixin` — первым!
