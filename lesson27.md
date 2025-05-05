@@ -125,7 +125,6 @@ urlpatterns = [
 - Возвращаем HTML-шаблон `index.html` с помощью функции `render()`.
 - В `urls.py` передаём `HomeView.as_view()`, чтобы Django мог вызвать класс как обычную view-функцию.
 
-
 Теперь добавим в класс метод `post()`, который будет обрабатывать `POST`-запросы. Например, мы можем создать форму, которая отправляет данные на сервер:
 
 ```python
@@ -228,7 +227,7 @@ urlpatterns = [
 
 Есть несколько способов передать данные в шаблон, используя `TemplateView`.
 
-#### 1. Метод `get_context_data()` 
+#### 1. Метод `get_context_data()`
 
 Если нужно передать переменные в шаблон — можно переопределить метод `get_context_data()`:
 
@@ -254,7 +253,6 @@ class HomePageView(TemplateView):
 
 - Метод `get_context_data()` возвращает словарь переменных для шаблона и выполняется с каждым запросом.
 - Мы добавляем туда ключи `title` и `year`, которые можно использовать в `home.html`.
-
 
 #### 2. Через атрибут extra_context
 
@@ -558,7 +556,7 @@ ordering = ['-created_at']
 
 Это самый быстрый способ задать простой порядок сортировки объектов в ListView, не прибегая к дополнительному коду.
 
-##  Class DetailView
+## Class DetailView
 
 [DetailView](https://ccbv.co.uk/projects/Django/4.2/django.views.generic.detail/DetailView/) — это обобщённый класс-представление, предназначенный для отображения одного объекта модели.
 
@@ -610,19 +608,12 @@ urlpatterns = [
 Класс `DetailView` предоставляет ряд атрибутов и методов, которые позволяют гибко управлять выборкой данных и отображением шаблона:
 
 - `model` — указывает модель, с которой работает представление.
-
 - `template_name` — задаёт путь к шаблону, который нужно отрендерить. Если не указан, Django подставит шаблон по умолчанию.
-
 - `context_object_name` — определяет имя переменной, под которым объект будет передан в шаблон (по умолчанию это `object`).
-
 - `pk_url_kwarg` — имя параметра в URL, по которому ищется pk. По умолчанию используется `"pk"`.
-
 - `slug_field` — указывает поле модели, по которому будет происходить поиск при использовании `slug` (например, `slug = models.SlugField(...))`.
-
 - `slug_url_kwarg` — задаёт имя параметра `slug` в URL-шаблоне, если используется поиск по слагу.
-
 - `get_queryset()` — метод, который позволяет ограничить выборку объектов, например: `Product.objects.filter(is_published=True)`.
-
 - `get_context_data()` — метод, позволяющий добавить дополнительные переменные в контекст шаблона, помимо самого объекта.
 
 ### Добавление дополнительных данных через get_context_data()
@@ -727,7 +718,6 @@ urlpatterns = [
 
 - URL содержит `slug`, например: `/products/apple-iphone-15/`
 - Django получает значение `product_slug` из `URL` и ищет объект в базе: `Product.objects.get(slug="apple-iphone-15")`
-
 - Объект передаётся в шаблон под именем `product`.
 
 Такой подход используется во всех современных сайтах: для SEO, удобных ссылок и читаемости адресов.
@@ -849,9 +839,7 @@ class ProductForm(forms.ModelForm):
 **Что даёт использование `form_class` и `ModelForm`:**
 
 - Возможность полностью контролировать внешний вид и поведение формы.
-
 - Более чистый и переиспользуемый код — можно подключить эту форму и в admin, и в других местах.
-
 - Простая реализация собственной валидации (`clean_<field>() `или `clean()`).
 
 #### Пример: собственная валидация через clean_price()
@@ -1006,6 +994,7 @@ urlpatterns = [
     path("products/<int:pk>/edit/", ProductUpdateView.as_view(), name="product_edit"),
 ]
 ```
+
 **Что происходит:**
 
 - Django по `pk` находит объект в базе: `Product.objects.get(pk=...).`
@@ -1175,7 +1164,7 @@ def get_context_data(self, **kwargs):
 def form_valid(self, form):
     name = form.cleaned_data["name"]
     message = form.cleaned_data["message"]
-    
+  
     # Псевдо-отправка email
     send_email_to_support(name, message)
 
@@ -1217,6 +1206,7 @@ urlpatterns = [
 ```
 
 **Шаблон подтверждения (product_confirm_delete.html)**
+
 ```html
 <!-- templates/product_confirm_delete.html -->
 <h1>Удалить товар "{{ object.name }}"?</h1>
@@ -1498,12 +1488,12 @@ def form_valid(self, form):
 
 ### Полезные параметры `LoginView`
 
-| Атрибут                    | Что делает                                                                 |
-|----------------------------|---------------------------------------------------------------------------|
-| `template_name`            | Путь к шаблону формы входа                                                |
-| `next_page`                | Адрес редиректа после логина                                              |
-| `redirect_authenticated_user` | Не показывать форму, если пользователь уже вошёл                          |
-| `authentication_form`      | Класс формы логина (можно кастомизировать поля, стили и поведение)        |
+| Атрибут                  | Что делает                                                                                                       |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `template_name`               | Путь к шаблону формы входа                                                                          |
+| `next_page`                   | Адрес редиректа после логина                                                                     |
+| `redirect_authenticated_user` | Не показывать форму, если пользователь уже вошёл                                 |
+| `authentication_form`         | Класс формы логина (можно кастомизировать поля, стили и поведение) |
 
 `LoginView` — это мощный инструмент, который позволяет быстро и безопасно реализовать вход пользователя. Всё, что нам нужно:
 
@@ -1555,6 +1545,7 @@ urlpatterns = [
 ```python
 path("logout/", LogoutView.as_view(next_page="home_page"), name="logout")
 ```
+
 Здесь next_page — это имя URL, на который будет выполнен редирект.
 
 **2. Установить `LOGOUT_REDIRECT_URL` в `settings.py`**
@@ -1610,11 +1601,11 @@ path("logout/", SecureLogoutView.as_view(), name="logout"),
 
 ### Основные параметры `LogoutView`
 
-| Атрибут        | Описание                                                                 |
-|----------------|--------------------------------------------------------------------------|
-| `next_page`    | Куда перенаправить после выхода (можно указать URL или имя маршрута)    |
-| `template_name`| Если не перенаправлять, можно отобразить страницу *"Вы вышли из системы"* |
-| `extra_context`| Дополнительные переменные в шаблон (если используется `template_name`)  |
+| Атрибут    | Описание                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `next_page`     | Куда перенаправить после выхода (можно указать URL или имя маршрута)            |
+| `template_name` | Если не перенаправлять, можно отобразить страницу*"Вы вышли из системы"* |
+| `extra_context` | Дополнительные переменные в шаблон (если используется `template_name`)               |
 
 ### Пример: отображение страницы после выхода
 
@@ -1654,7 +1645,6 @@ path("logout/", LogoutDisplayView.as_view(), name="logout"),
 
 По сути регистрация - это `CreateView` со своими особенностями (пароль хешируется), поэтому для регистрации используют просто `CreateView`, и существует заранее описанная форма `UserCreationForm`()
 
-    
 ```python
 class UserCreationForm(forms.ModelForm):
     """
@@ -1823,6 +1813,7 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
     context_object_name = "product"
     login_url = "/login/"  # редирект если пользователь не авторизован
 ```
+
 **Почему это лучше, чем @method_decorator?**
 
 - Код чище и проще.
@@ -1959,7 +1950,6 @@ class ProductAdminListView(PermissionRequiredMixin, ListView):
 
 `raise_exception = True` — это значит, что если у пользователя нет прав, он увидит ошибку `403 Forbidden`, а не будет перенаправлен на страницу логина.
 
-
 ## UserPassesTestMixin — гибкая проверка доступа
 
 [UserPassesTestMixin](https://ccbv.co.uk/projects/Django/4.2/django.contrib.auth.mixins/UserPassesTestMixin/) используется, когда тебе нужно реализовать свою собственную логику проверки прав доступа, которую нельзя выразить через стандартные разрешения (`permissions`) или простой вход в систему (`LoginRequiredMixin`).
@@ -2013,7 +2003,7 @@ from django.contrib.auth.mixins import UserPassesTestMixin
 
 
 class SuperUserRequiredMixin(UserPassesTestMixin):
-    
+  
     def test_func(self):
         return self.request.user.is_superuser
 ```
@@ -2035,3 +2025,370 @@ class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 ```
 
 Порядок важен: `LoginRequiredMixin` — первым!
+
+## Пример проекта: сервис бронирования столиков
+
+В этом примере мы покажем, как построить полноценное веб-приложение на Django, используя `Class-Based Views`, формы, миксины, авторизацию и контроль доступа.
+
+### Задача проекта
+
+Пользователи должны иметь возможность:
+
+- Зарегистрироваться и войти на сайт,
+- Забронировать столик на определённую дату и время,
+- Посмотреть свои брони (но не чужие),
+- Отменить только свои брони,
+- Получить в форме только доступные даты и время.
+
+### Модели
+
+Любой проект начинается с моделей. Мы создадим две модели: `Table` и `Booking`. Где `Table` — это столик в ресторане, а `Booking` — это бронь на столик.
+
+```python
+# models.py
+# models.py
+from django.db import models
+from django.contrib.auth.models import User
+
+class Table(models.Model):
+    number = models.PositiveIntegerField(unique=True)
+    seats = models.PositiveIntegerField()
+
+    def __str__(self):
+        return f"Столик №{self.number} на {self.seats} человек"
+
+class Booking(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    table = models.ForeignKey(Table, on_delete=models.CASCADE)
+    date = models.DateField()
+    time = models.TimeField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} → {self.table} ({self.date} {self.time})"
+
+    class Meta:
+        ordering = ["-date", "-time"]
+        unique_together = ("table", "date", "time")  # уникальность брони по столу, дате и времени
+```
+
+После того как мы создали модели, сделаем миграции!
+
+### Формы
+
+Формы — это важная часть нашего проекта. Они позволяют пользователю вводить данные, а нам — обрабатывать их. Мы создадим три формы: для регистрации, входа и бронирования.
+
+```python
+Форма регистрации
+class RegisterForm(forms.Form):
+    username = forms.CharField(label="Имя пользователя")
+    email = forms.EmailField(label="Email")
+    password1 = forms.CharField(label="Пароль", widget=forms.PasswordInput)
+    password2 = forms.CharField(label="Повторите пароль", widget=forms.PasswordInput)
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        if User.objects.filter(username=username).exists():
+            raise forms.ValidationError("Пользователь с таким именем уже существует.")
+        return username
+
+    def clean_email(self):
+        email = self.cleaned_data.get("email")
+        if User.objects.filter(email=email).exists():
+            raise forms.ValidationError("Пользователь с таким email уже существует.")
+        return email
+
+    def clean(self):
+        cleaned_data = super().clean()
+        p1 = cleaned_data.get("password1")
+        p2 = cleaned_data.get("password2")
+        if p1 and p2 and p1 != p2:
+            raise forms.ValidationError("Пароли не совпадают.")
+        return cleaned_data
+
+    def save(self):
+        user = User.objects.create_user(
+            username=self.cleaned_data["username"],
+            email=self.cleaned_data["email"],
+            password=self.cleaned_data["password1"],
+        )
+        return user
+
+
+#Форма входа
+class LoginForm(forms.Form):
+    username = forms.CharField()
+    password = forms.CharField(widget=forms.PasswordInput)
+
+    def clean(self):
+        ...
+  
+    def get_user(self):
+        return self.user
+
+
+#Форма бронирования
+class BookingForm(forms.ModelForm):
+    class Meta:
+        model = Booking
+        fields = ["table", "date", "time"]
+        widgets = {
+            "date": forms.DateInput(attrs={"type": "date"}),
+            "time": forms.TimeInput(attrs={"type": "time"}),
+        }
+        labels = {
+            "table": "Столик",
+            "date": "Дата",
+            "time": "Время",
+        }
+```
+
+### URL-ы
+
+Добавим URL-ы для всех представлений: для главной страницы, входа, выхода, регистрации и списка бронирований.
+
+```python
+# urls.py
+urlpatterns = [
+    path("", HomePageView.as_view(), name="home"),
+    path("bookings/", BookingListView.as_view(), name="booking_list"),
+    path("bookings/new/", BookingCreateView.as_view(), name="booking_create"),
+    path("bookings/<int:pk>/delete/", BookingDeleteView.as_view(), name="booking_delete"),
+    path("login/", CustomLoginView.as_view(), name="login"),
+    path("logout/", CustomLogoutView.as_view(), name="logout"),
+    path("register/", RegisterView.as_view(), name="register"),
+]
+```
+
+Теперь можно переходить к представлениям.
+
+## Представления
+
+Теперь создадим представления для всех страниц. Мы будем использовать `Class-Based Views`, чтобы сделать код более читаемым и поддерживаемым.
+
+Начнем с главной страницы, страницы входа и выхода, регистрации и списка бронирований.
+
+```python
+from django.contrib.auth import login
+from django.contrib.auth.views import LogoutView
+from django.views.generic import (
+    TemplateView,
+    ListView,
+    CreateView,
+    DeleteView,
+    FormView
+)
+
+from .models import Booking
+from django.urls import reverse_lazy
+from .forms import BookingForm, RegisterForm, LoginForm
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+
+
+class CustomLoginView(FormView):
+    """
+    Представление для входа пользователя.
+    """
+    template_name = "login.html"
+    form_class = LoginForm
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        login(self.request, form.get_user())
+        return super().form_valid(form)
+
+
+class CustomLogoutView(LogoutView):
+    """
+    Представление для выхода пользователя.
+    """
+    next_page = reverse_lazy("home")
+
+
+class RegisterView(FormView):
+    """
+    Представление для регистрации пользователя.
+    """
+    template_name = "register.html"
+    form_class = RegisterForm
+    success_url = reverse_lazy("home")
+
+    def form_valid(self, form):
+        user = form.save()
+        login(self.request, user) 
+        return super().form_valid(form)
+
+
+class HomePageView(TemplateView):
+    """
+    Главная страница сайта.
+    """
+    template_name = "index.html"
+
+
+class BookingCreateView(LoginRequiredMixin, CreateView):
+    """
+    Представление для создания новой брони.
+    """
+    model = Booking
+    form_class = BookingForm
+    template_name = "booking_form.html"
+    success_url = reverse_lazy("booking_list")
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class BookingListView(LoginRequiredMixin, ListView):
+    """
+    Представление для списка бронирований пользователя.
+    """
+    model = Booking
+    template_name = "booking_list.html"
+    context_object_name = "bookings"
+
+    def get_queryset(self):
+        return Booking.objects.filter(user=self.request.user)
+
+
+class BookingDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    """
+    Представление для удаления брони.
+    """
+    model = Booking
+    template_name = "booking_confirm_delete.html"
+    success_url = reverse_lazy("booking_list")
+
+    def test_func(self):
+        booking = self.get_object()
+        return booking.user == self.request.user
+```
+
+Логика представлений готова. Теперь создадим шаблоны для каждой страницы.
+
+### Шаблоны
+
+Начнем с гласной страницы, страницы входа и выхода, регистрации и списка бронирований.
+
+```html
+<!-- templates/index.html -->
+  {% if user.is_authenticated %} <!-- если пользователь авторизован -->
+      <p>Привет, {{ user.username }}!</p>
+      <form action="{% url 'logout' %}" method="post" style="display:inline;">
+    {% csrf_token %}
+    <button type="submit">Выйти</button>
+  </form>
+    {% else %} <!-- если пользователь не авторизован -->
+      <p> Вы не авторизованы. <a href="{% url 'login' %}">Войти</a></p>
+      <a href="{% url 'register' %}">регистрация</a>
+    {% endif %}
+
+    <h1>Добро пожаловать в наш ресторан</h1>
+    <p><a href="{% url 'booking_list' %}">Мои брони</a></p>
+    <p><a href="{% url 'booking_create' %}">Забронировать столик</a></p>
+```
+
+ На главной странице мы показываем приветствие для авторизованных пользователей и ссылки на вход и регистрацию для неавторизованных.
+
+**Дальше идёт страница входа login.html:**
+
+В ней мы используем форму `LoginForm`, которая была создана ранее. Она принимает имя пользователя и пароль, а затем выполняет вход в систему.
+
+```html
+<!-- templates/login.html -->
+ <a href="{% url 'register' %}">регистрация</a>
+
+    <h2>Вход в систему</h2>
+    <form method="post">
+      {% csrf_token %} {{ form.non_field_errors }} {% for field in form %}
+      <div>{{ field.label_tag }} {{ field }} {{ field.errors }}</div>
+      {% endfor %}
+
+      <button type="submit">Войти</button>
+    </form>
+```
+
+**Страница регистрации `register.html`:**
+
+```html
+<!-- templates/register.html -->
+<h2>Регистрация пользователя</h2>
+<a href="{% url 'login' %}">Вход в систему</a>
+
+<form method="post">
+  {% csrf_token %}
+  {{ form.non_field_errors }}
+  
+  {% for field in form %}
+    <div>
+      {{ field.label_tag }}
+      {{ field }}
+      {{ field.errors }}
+    </div>
+  {% endfor %}
+  
+  <button type="submit">Зарегистрироваться</button>
+</form>
+```
+
+**Страница списка бронирований `booking_list.html`:**
+
+В шаблоне списка бронирований мы показываем все брони текущего пользователя, с возможностью ёё отмены. Если у него нет бронирований, выводим сообщение об этом.
+
+```html
+<!-- templates/booking_list.html -->
+<h2>Мои брони</h2>
+
+<ul>
+  {% for booking in bookings %}
+    <li>
+      {{ booking }} 
+      <a href="{% url 'booking_delete' booking.pk %}">Отменить</a>
+    </li>
+  {% empty %}
+    <li>У вас пока нет бронирований.</li>
+  {% endfor %}
+</ul>
+
+<p><a href="{% url 'booking_create' %}">Добавить новое бронирование</a></p> 
+```
+
+**Страница создания бронирования `booking_form.html`:**
+
+Простой шаблон с формой для создания бронирования. Мы используем `BookingForm`, который был создан ранее. Он позволяет выбрать столик, дату и время.
+
+```html
+<!-- templates/booking_form.html -->
+    <h2>Забронировать столик</h2>
+
+    <form method="post">
+      {% csrf_token %} {{ form.as_p }}
+      <button type="submit">Забронировать</button>
+    </form>
+```
+
+**Страница подтверждения удаления бронирования `booking_confirm_delete.html`:**
+
+Шаблон для подтверждения удаления бронирования. Мы показываем сообщение с вопросом, действительно ли пользователь хочет отменить бронь. Если да, то отправляем `POST`-запрос на удаление. В противном случае — редиректим на страницу со списком бронирований.
+
+```html
+<!-- templates/booking_confirm_delete.html -->
+     <h2>Подтверждение удаления</h2>
+    <p>Вы уверены, что хотите отменить бронирование?</p>
+
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit">Да, отменить</button>
+      <a href="{% url 'booking_list' %}">Нет, вернуться</a>
+    </form>
+```
+
+По итогу у нас получился полноценный сервис бронирования столиков в ресторане.
+
+**Пользователи могут:**
+
+- Зарегистрироваться, войти в систему, забронировать столик на определённую дату и время, посмотреть свои брони и отменить их.
+- При этом мы используем `Class-Based Views`, формы, миксины и авторизацию, что делает код более читаемым и поддерживаемым.
+- Всё это позволяет нам легко расширять функционал и добавлять новые возможности в будущем.
+- Например, можно добавить возможность редактирования брони, добавления отзывов о ресторане и т.д.
