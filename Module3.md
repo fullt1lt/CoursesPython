@@ -256,10 +256,9 @@ AUTH_USER_MODEL = 'shop.User'
 ### Что необходимо сделать:
 
 **1. Подготовка среды**
-
     - Убедитесь, что все модели из предыдущего блока реализованы и применены через`makemigrations` и `migrate`.
-    - Запустите Django shell командой:
-        ``bash         python manage.py shell         ``
+    - Запустите Django `shell` командой:
+        ```python manage.py shell ```
 
     В этом режиме вы будете выполнять все задания.
 
