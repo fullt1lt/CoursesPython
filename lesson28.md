@@ -178,7 +178,7 @@
 
 ## Почему нужны куки, сессии и кеш?
 
-Протокол `HTTP`, на котором работает весь веб, изначально был разработан как stateless — то есть не хранящий состояние. Это значит, что каждый запрос от клиента (браузера) к серверу — независим и не содержит никакой информации о предыдущих запросах.
+Протокол `HTTP`, на котором работает весь веб, изначально был разработан как `stateless` — то есть не хранящий состояние. Это значит, что каждый запрос от клиента (браузера) к серверу — независим и не содержит никакой информации о предыдущих запросах.
 Если бы не специальные механизмы, сервер каждый раз *"забывал бы"*, кто Вы:
 - Вы заходите на сайт, логинитесь — сервер подтверждает.
 - Переходите на следующую страницу — и… снова неизвестный пользователь.
@@ -242,6 +242,11 @@ class HomePageView(TemplateView):
             )
         return response
 ```
+Если пользователь выбрал цвет — сохраняем его в куку с параметрами:
+ - `max_age=3600` — срок действия 1 час;
+ - `httponly=True` — кука недоступна из JavaScript (безопасность);
+ - `samesite='Lax'` — кука не отправляется при POST-запросах (предотвращает CSRF).
+
 
 **Шаблон home.html:**
 
@@ -357,43 +362,39 @@ sessionid=3e0d49a145e34e7a8d55d8e934fa9c77b68123cd
 
 **Что делает пример:**
 - На странице отображается список товаров.
-- У каждого товара есть кнопка «Добавить в корзину».
-- При клике его id сохраняется в сессии.
+- У каждого товара есть кнопка *«Добавить в корзину»*.
+- При клике его `id` сохраняется в сессии.
 - В шаблоне отображается содержимое корзины на основе данных в сессии.
 
 ```python
+# views.py
 from django.views.generic import TemplateView
 from django.shortcuts import redirect
-
-# Имитируем товары (в реальном проекте — модель Product)
-PRODUCTS = {
-    1: "Футболка",
-    2: "Джинсы",
-    3: "Кроссовки",
-    4: "Очки"
-}
+from my_app.models import Product
 
 class CartView(TemplateView):
-    template_name = 'cart.html'
+    template_name = "cart.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        # Получаем корзину из сессии (список ID товаров)
-        cart = self.request.session.get('cart', [])
+        # Получаем список товаров из базы
+        context["products"] = Product.objects.all()
 
-        # Преобразуем ID в названия
-        context['products'] = PRODUCTS
-        context['cart_items'] = [PRODUCTS.get(int(pid), 'Неизвестно') for pid in cart]
+        # Получаем корзину из сессии — список id товаров
+        cart_ids = self.request.session.get("cart", [])
+
+        # Выбираем объекты Product по этим id
+        context["cart_items"] = Product.objects.filter(id__in=cart_ids)
         return context
 
     def post(self, request, *args, **kwargs):
-        product_id = request.POST.get('product_id')
+        product_id = request.POST.get("product_id")
         if product_id:
-            cart = request.session.get('cart', [])
+            cart = request.session.get("cart", [])
             if product_id not in cart:
                 cart.append(product_id)
-                request.session['cart'] = cart
+                request.session["cart"] = cart
         return redirect(request.path)
 ```
 
@@ -403,17 +404,17 @@ class CartView(TemplateView):
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Корзина на сессии</title>
+    <title>Корзина</title>
 </head>
 <body>
     <h1>Список товаров</h1>
     <ul>
-        {% for id, name in products.items %}
+        {% for product in products %}
         <li>
-            {{ name }}
+            {{ product.name }} — {{ product.price }}₽
             <form method="post" style="display:inline;">
                 {% csrf_token %}
-                <input type="hidden" name="product_id" value="{{ id }}">
+                <input type="hidden" name="product_id" value="{{ product.id }}">
                 <button type="submit">Добавить в корзину</button>
             </form>
         </li>
@@ -426,7 +427,7 @@ class CartView(TemplateView):
     {% if cart_items %}
         <ul>
             {% for item in cart_items %}
-                <li>{{ item }}</li>
+                <li>{{ item.name }} — {{ item.price }}₽</li>
             {% endfor %}
         </ul>
     {% else %}
