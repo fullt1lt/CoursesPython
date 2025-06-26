@@ -496,7 +496,7 @@
   - UserPassesTestMixin - более сложные проверки прав пользователей
 - Комбинирование миксинов
 
-# Лекция 28: NoSQL. Куки, сессии, кеш. (3 часа)
+# Лекция 28: NoSQL. Куки, сессии, кеш. (1.5 часа)
 
 - Введение в NoSQL
   - Что такое NoSQL и зачем он нужен?
@@ -524,7 +524,7 @@
     - Простое кеширование представления
     - Кеширование в коде (ручной способ)
 
-# Лекция 29. Middleware. Signals. Messages. Manage commands(3 часа)
+# Лекция 29. Middleware. Signals. Messages. Manage commands(1.5 часа)
 
 - Что такое Middleware?
   - Пример работы Middleware:
@@ -555,7 +555,7 @@
   - Код ответа (200, 201, 400, 401, 403, 404, 500).
   - JSON как формат передачи данных.
 
-# Лекция 31: Django REST Framework. FBV. Установка. Создание API. (1.5 часа)
+# Лекция 31: Django REST Framework. FBV. Установка. Создание API. APIView, ViewSet, Routers. (3 часа)
 
 - Введение в Django REST Framework (DRF)
 - Что такое Django REST Framework (DRF)?
@@ -580,9 +580,6 @@
   - Что такое сериализаторы и зачем они нужны?
   - Serializer vs ModelSerializer.
   - Примеры сериализации данных.
-
-# Лекция 32: Django REST Framework. APIView, ViewSet, Routers. (3 часа)
-
 - APIView в Django REST Framework
   - Сравнение FBV и APIView
   - Примеры запросов через Postman (GET):
@@ -602,7 +599,7 @@
   - Что такое Router?
   - Подключение Router в urls.py
 
-# Лекция 33: REST аутентификация. Авторизация. Permissions. Фильтрация. (3 часа)
+# Лекция 32: REST аутентификация. Авторизация. Permissions. Фильтрация. (3 часа)
 
 - Аутентификация и Авторизация
   - Разница между аутентификацией и авторизацией
@@ -624,7 +621,7 @@
   - Примеры
 - Поиск и сортировка в API
 
-# Лекция 34: Тестирование API в Django REST Framework (3 часа)
+# Лекция 33: Тестирование API в Django REST Framework (3 часа)
 
 - Введение в тестирование API
 - Django TestCase и APIClient
@@ -637,79 +634,7 @@
   - Разница между модульными и интеграционными тестами
   - Mocking зависимостей в тестах
 
-# Лекция 35: Linux. Всё, что нужно знать для деплоймента
-
-- Введение в Linux
-  - Что такое операционная система?
-  - Различия между Windows, macOS и Linux.
-  - Дистрибутивы Linux: Ubuntu, Debian, CentOS.
-  - Применение Linux в серверах.
-- Работа с терминалом
-  - Основные команды навигации:
-    - ls, cd, pwd – навигация по файловой системе.
-    - cp, mv, rm, mkdir – работа с файлами и папками.
-    - cat, less, nano, vim – работа с текстовыми файлами.
-  - Команды мониторинга системы:
-    - ps, top, htop – просмотр процессов.
-    - df -h, du -sh \* – анализ дискового пространства.
-    - free -m – проверка памяти.
-- Права доступа, пользователи и группы
-  - Что такое root и sudo?
-    - Управление пользователями:
-      -useradd, passwd, deluser, whoami
-    - Управление группами:
-      - groups, groupadd, usermod
-    - Права доступа к файлам:
-      - ls -l, chmod, chown
-- Работа с сетью
-  - Проверка сетевого подключения:
-    - ifconfig, ip a, ping, netstat
-  - Управление брандмауэром:
-    - ufw allow, ufw status
-- Управление пакетами (APT)
-  - Установка и обновление пакетов:
-    - apt update, apt upgrade
-    - apt install, apt remove
-  - Работа с зависимостями и очистка:
-    - apt autoremove, apt clean
-- Работа с сервисами (Systemd)
-  - Запуск и остановка сервисов:
-    = systemctl start/stop/status
-  - Автозапуск сервисов:
-    - systemctl enable/disable
-  - Логирование сервисов:
-    - journalctl -u `<service>`
-- Переменные окружения
-  - export VAR=value
-  - .bashrc, .profile
-  - env и printenv
-  - Использование .env файлов
-- Работа с SSH
-  - Подключение по SSH: ssh user@host
-  - Генерация SSH-ключей: ssh-keygen -t rsa
-  - Настройка аутентификации через ключи.
-  - SCP и SFTP для передачи файлов.
-- Симлинки и файловая система
-  - ln -s source target
-  - Разделение на /bin, /etc, /home, /var
-- Работа с cron (Планировщик задач)
-  - Запуск задач по расписанию.
-  - crontab -e
-  - Примеры автоматических задач.
-- Настройка веб-серверов
-  - Nginx:
-    - Установка и запуск (apt install nginx)
-    - Настройка конфигурации (/etc/nginx/sites-available/)
-    - Перезапуск сервера (systemctl restart nginx)
-  - Apache:
-    - Отличия от Nginx.
-    - Основные команды управления.
-- Демонизация процессов
-  - Запуск фоновых процессов.
-  - Создание Systemd-сервисов (.service файлы).
-  - nohup и tmux.
-
-# Лекция 36. Deployment Django-проекта
+# Лекция 34. Deployment Django-проекта
 
 - Введение
   - Что такое деплой?
