@@ -624,7 +624,7 @@ class ProductModelSerializer(serializers.ModelSerializer):
 
 ### Поля сериализаторов в Django REST Framework
 
-![Официальная документация DRF](https://www.django-rest-framework.org/api-guide/fields/)
+[Официальная документация DRF](https://www.django-rest-framework.org/api-guide/fields/)
 
 Сериализаторы в `Django REST Framework` работают очень похоже на формы и модели Django. Они описывают структуру данных, которую мы хотим сериализовать или десериализовать, а также правила валидации и отображения.
 
@@ -708,7 +708,7 @@ class ProductSerializer(serializers.Serializer):
 **Пример вложенного объекта:**
 
 ```python
-class Product()(models.Model):
+class Product(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     price = models.DecimalField(max_digits=8, decimal_places=2)
@@ -996,7 +996,6 @@ category = serializers.SlugRelatedField(slug_field='title', queryset=Category.ob
   "price": "49990.00"
 }
 ```
-
 
 #### 4. Вложенный сериализатор (Nested)
 
