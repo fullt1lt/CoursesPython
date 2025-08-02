@@ -174,7 +174,7 @@ psql -U postgres
 ### Linux/mac
 
 ```sh
-sudo psql -u postgres
+sudo -u postgres psql
 ```
 
 Линукс либо мак при такой команде сначала спросит пароль от системы и только после этого пароль от базы, это нормально.
