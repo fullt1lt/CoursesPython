@@ -1108,6 +1108,184 @@ class Student(models.Model):
 - Django создаст таблицу с именем `custom_student_table` вместо `my_app_student`.
 - нельзя будет добавить двух студентов с одинаковыми именем и фамилией.
 
+## Валидация моделей: clean(), full_clean() и ограничения данных
+
+Когда мы создаём модели в Django, важно не только описать структуру таблиц, но и задать правила валидации — то есть проверить, что данные, которые попадают в базу, корректные. `Django` позволяет делать это на нескольких уровнях:
+
+- на уровне отдельных полей — с помощью встроенных валидаторов и параметров (например, `validators`, `unique=True`, `choices`);
+- на уровне модели целиком — через методы `clean()` и `full_clean()`, где можно описывать более сложные зависимости между полями;
+- и на уровне базы данных — с помощью уникальных и проверочных ограничений (`UniqueConstraint`, `CheckConstraint` и других).
+
+Все эти уровни дополняют друг друга. Простые проверки лучше описывать прямо в полях, бизнес-логику — в методах модели, а правила целостности данных, которые должны соблюдаться при любых обстоятельствах — в базе данных.
+
+### Валидаторы на уровне полей
+
+Иногда нужно проверить правильность значения одного конкретного поля — например, чтобы цена не была отрицательной, рейтинг не выходил за пределы `0–5,` а `slug` содержал только допустимые символы.
+Для этого в Django используются валидаторы — специальные функции или классы, которые проверяют данные и, если они не проходят проверку, вызывают исключение `ValidationError`.
+
+Django уже содержит большой набор готовых валидаторов, но при необходимости можно писать и свои.
+
+```python
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+
+slug_validator = RegexValidator(
+    r'^[a-z0-9-]+$', 
+    'Разрешены только строчные латинские буквы, цифры и дефис.'
+)
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    slug = models.CharField(max_length=120, unique=True, validators=[slug_validator])
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    rating = models.FloatField(
+        null=True, blank=True,
+        validators=[MinValueValidator(0.0), MaxValueValidator(5.0)]
+    )
+```
+
+В этом примере:
+
+- поле `price` не позволит сохранить отрицательное значение;
+- поле `rating` должно быть между 0 и 5;
+- поле `slug` проверяется регулярным выражением — допускаются только строчные латинские буквы, цифры и дефис.
+
+Эти проверки будут работать в админке, в формах, в сериализаторах(о них поговорим на rest_framework) и при ручном вызове метода `full_clean()`.
+
+#### Основные встроенные валидаторы Django
+
+Django предоставляет готовые валидаторы, которые можно применять сразу — без написания дополнительного кода:
+
+| Валидатор                           | Назначение                                                                                | Пример                                                                         |
+| ----------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **MinValueValidator**               | Проверяет, что значение не меньше заданного минимума.                                     | `price = models.DecimalField(..., validators=[MinValueValidator(0)])`          |
+| **MaxValueValidator**               | Проверяет, что значение не превышает указанный максимум.                                  | `age = models.IntegerField(validators=[MaxValueValidator(120)])`               |
+| **MinLengthValidator**              | Проверяет минимальную длину строки.                                                       | `password = models.CharField(validators=[MinLengthValidator(8)])`              |
+| **MaxLengthValidator**              | Проверяет максимальную длину строки.                                                      | `comment = models.TextField(validators=[MaxLengthValidator(500)])`             |
+| **RegexValidator**                  | Проверяет значение по регулярному выражению.                                              | `slug = models.CharField(validators=[RegexValidator(r'^[a-z0-9-]+$')])`        |
+| **EmailValidator / validate_email** | Проверяет корректность email-адреса.                                                      | `email = models.EmailField(validators=[EmailValidator()])`                     |
+| **URLValidator**                    | Проверяет корректность URL.                                                               | `link = models.URLField(validators=[URLValidator()])`                          |
+| **FileExtensionValidator**          | Проверяет расширение загружаемого файла.                                                  | `file = models.FileField(validators=[FileExtensionValidator(['pdf', 'jpg'])])` |
+| **validate_slug**                   | Проверяет, что значение подходит для slug (только латиница, цифры, дефис, подчёркивание). | `slug = models.SlugField(validators=[validate_slug])`                          |
+
+Несколько валидаторов для одного поля
+
+К одному полю можно применить сразу несколько валидаторов — Django проверит их все последовательно:
+
+```python
+from django.core.validators import MinValueValidator, MaxValueValidator, RegexValidator
+
+class Product(models.Model):
+    name = models.CharField(
+        max_length=100,
+        validators=[
+            RegexValidator(r'^[A-Za-z0-9\s]+$', 'Название может содержать только буквы, цифры и пробелы.')
+        ]
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        validators=[
+            MinValueValidator(0),
+            MaxValueValidator(100000)
+        ]
+    )
+```
+
+Теперь Django проверит:
+
+- что название соответствует шаблону (только буквы, цифры и пробелы);
+- что цена не меньше нуля и не больше `100 000`.
+
+Где и когда срабатывают валидаторы
+
+- В админке — при сохранении объекта через интерфейс администратора;
+- В формах и `ModelForm` — при вызове метода `is_valid()`;
+- При ручной проверке — если вызвать `instance.full_clean()` перед сохранением.
+
+Если валидация не пройдена, Django поднимет `ValidationError` и не позволит сохранить объект в базу данных.
+
+Валидаторы подходят для простых и независимых проверок отдельных полей.
+Когда нужно проверить взаимосвязь нескольких полей сразу — используют метод `clean()`, о котором поговорим дальше.
+
+### Метод clean() — проверки на уровне модели
+
+Если правило касается сразу нескольких полей (например, скидка не может быть больше 100%, или цена не может быть отрицательной), то нужно использовать метод `clean()`.
+
+```python
+from django.core.exceptions import ValidationError, NON_FIELD_ERRORS
+
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    discount_percent = models.PositiveIntegerField(default=0)
+
+    def clean(self):
+        super().clean()
+
+        errors = {}
+
+        if self.discount_percent > 100:
+            errors['discount_percent'] = 'Скидка не может быть больше 100%.'
+
+        if self.price is not None and self.price < 0:
+            errors[NON_FIELD_ERRORS] = ['Цена не может быть отрицательной.']
+
+        if errors:
+            raise ValidationError(errors)
+```
+
+Здесь мы видим:
+- Если правило относится к конкретному полю, используем словарь вида {`'field_name': 'сообщение'`}.
+- Если это общая ошибка, не привязанная к полю, — добавляем её в `NON_FIELD_ERRORS`.
+
+Метод `clean()` можно вызывать вручную, а можно — через `full_clean()`, который выполняет все проверки сразу.
+
+#### Метод full_clean() — полный цикл проверки модели
+
+Метод `full_clean() `— это основной способ запустить всю валидацию модели. Django выполняет три шага:
+
+- Проверяет поля (`clean_fields()`).
+- Вызывает метод `clean()` (межполевые проверки).
+- Проверяет уникальные ограничения (`validate_unique()`).
+
+Пример:
+
+```python
+p = Product(name='Phone', price=-10)
+p.full_clean()  # вызовет ValidationError
+p.save()
+```
+
+Если где-то есть ошибка — `Django` поднимет исключение `ValidationError`, и данные не сохранятся.
+
+Важно понимать, что метод `save()` сам по себе не вызывает валидацию, поэтому если вы создаёте или обновляете объекты вне формы (например, в сервисе или скрипте), лучше явно вызвать `full_clean()` перед сохранением.
+
+Валидация в админке и формах
+
+В админке и в ModelForm всё проще — Django вызывает `full_clean()` автоматически, когда вы нажимаете кнопку «Сохранить».
+Поэтому все правила, которые вы описали в модели (`validators`, `clean() `и т.д.), будут применены и там.
+
+Ограничения на уровне базы данных
+
+Даже если вы проверяете всё в коде, база данных должна быть последней линией защиты. Django позволяет добавлять ограничения прямо в модели, и при миграции они будут созданы в БД.
+
+Уникальность
+```python
+class Product(models.Model):
+    name = models.CharField(max_length=100)
+    sku = models.CharField(max_length=50)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'sku'], name='unique_product_name_sku')
+        ]
+```
+
 ## Абстрактные модели (Abstract Models)
 
 Иногда тебе нужно создать общие поля и методы, которые будут использоваться в разных моделях. Вместо того чтобы дублировать одно и то же в нескольких местах — лучше создать абстрактную модель.
