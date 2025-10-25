@@ -784,19 +784,18 @@ sudo apt install redis-server
 После установки Redis можно запустить и включить автозапуск:
 
 ```bash
-sudo systemctl start redis
-sudo systemctl enable redis
+# посмотреть, какие юниты есть
+systemctl list-unit-files | grep -i redis
+
+# запустить и одновременно включить автозапуск
+sudo systemctl enable --now redis-server.service
+
+# проверить статус
+systemctl status redis-server.service
+
 ```
 
-Проверить, работает ли Redis:
-
-```bash
-redis-cli ping
-```
-
-Если в ответ приходит PONG, значит `Redis` успешно работает и доступен по адресу `localhost:6379`.
-
-Теперь, когда Redis-сервер работает, Django будет использовать его как кеш-хранилище — если указан соответствующий backend в CACHES.
+Если всё прошло успешно, Redis будет работать в фоне и слушать подключения на порту `6379`.
 
 **Поведение кеша с Redis**
 
