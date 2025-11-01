@@ -668,11 +668,56 @@ urlpatterns = [
 from rest_framework import viewsets
 from .models import Product
 from .serializers import ProductSerializer
+from rest_framework.response import Response
+from rest_framework import status
 
-class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
+class ProductViewSet(viewsets.ViewSet):
+
+    # Получить список всех продуктов
+    def list(self, request):
+        products = Product.objects.all()
+        serializer = ProductSerializer(products, many=True)
+        return Response(serializer.data)
+
+    # Получить один продукт по id
+    def retrieve(self, request, pk=None):
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ProductSerializer(product)
+        return Response(serializer.data)
+
+    # Создать новый продукт
+    def create(self, request):
+        serializer = ProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def update(self, request, pk=None):
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = ProductSerializer(product, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def destroy(self, request, pk=None):
+        try:
+            product = Product.objects.get(pk=pk)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+        product.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 ```
+Здесь ViewSet — это просто контейнер для логики `CRUD`, но всё делается вручную: мы сами вызываем модель, сериализатор, проверяем `is_valid()`, обрабатываем ошибки.
 
 Этот код — это уже полноценное `API`, которое поддерживает:
 
@@ -683,7 +728,6 @@ class ProductViewSet(viewsets.ModelViewSet):
 - `PATCH /products/1/` — обновить частично;
 - `DELETE /products/1/` — удалить.
 
-Мы ничего не переопределяли, не писали `get()`, `post()` и т.п. Всё работает из коробки.
 
 ### Но как настроить маршруты?
 
@@ -721,6 +765,34 @@ urlpatterns = [
 - `DELETE /products/{id}/` — удаление продукта по `id`.
 
 Теперь всё: `DRF` сам создаст маршруты для всех операций с продуктами.
+
+Но такой подход всё ещё требует много повторяющегося кода. И когда у вас много моделей — это становится утомительно. Поэтому `DRF` предлагает ещё более простой способ — использовать `ModelViewSet`.
+
+### ModelViewSet — автоматизация CRUD
+
+`ModelViewSet` — объединяет в себе всё то, что мы только что писали вручную: он сам умеет работать с моделью и сериализатором, реализует все `CRUD`-действия и использует готовые миксины под капотом.
+
+**Пример использования `ModelViewSet`:**
+
+```python
+from rest_framework import viewsets
+from .models import Product
+from .serializers import ProductSerializer
+
+class ProductViewSet(viewsets.ModelViewSet):
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer
+```
+Теперь один этот класс выполняет всё то же самое, что мы делали вручную:
+
+- `GET /products/ `— получить список;
+- `GET /products/{id}/` — получить один объект;
+- `POST /products/` — создать новый;
+- `PUT /products/{id}/` — заменить полностью;
+- `PATCH /products/{id}/` — частично обновить;
+- `DELETE /products/{id}/` — удалить.
+
+Таким образом, `ViewSet` — это базовый механизм для объединения логики `CRUD`, а `ModelViewSet` — его расширение, которое автоматизирует всё взаимодействие с моделью и сериализатором.
 
 ## Пагинация в Django REST Framework
 
@@ -786,7 +858,7 @@ REST_FRAMEWORK = {
         },
         {
             "id": 6,
-            "name": "ксиамо",
+            "name": "ксиаоми",
             "price": "1550.00",
             "category": 1
         },
@@ -798,8 +870,8 @@ REST_FRAMEWORK = {
         },
         {
             "id": 8,
-            "name": "бла бла",
-            "price": "1200.00",
+            "name": "Iphone 15 Pro Max",
+            "price": "1800.00",
             "category": 1
         }
     ]
@@ -944,4 +1016,4 @@ GET /products/featured/
 - можно использовать все возможности DRF внутри метода;
 - работает *"из коробки"* с Router.
 
-С его помощью API становится не только RESTful, но и гибким: вы можете добавить любое поведение в нужное место.
+С его помощью API становится не только `RESTful`, но и гибким: вы можете добавить любое поведение в нужное место.
