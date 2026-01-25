@@ -1,4 +1,4 @@
-# Лекция 23. Шаблоны (Templates) в Django
+# Лекция 23: Шаблоны (Templates) в Django
 
 ![](image/template_django.png)
 

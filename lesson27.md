@@ -1,4 +1,4 @@
-# Лекция 27. Class-Based Views (CBV) в Django
+# Лекция 27: Class-Based Views (CBV) в Django
 
 ![](image/CBV.jpg)
 

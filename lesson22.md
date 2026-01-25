@@ -1,4 +1,4 @@
-# Лекция 22. Введение в Django
+# Лекция 22: Введение в Django
 
 ![](image/python_django.webp)
 

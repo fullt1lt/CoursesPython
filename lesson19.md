@@ -1,4 +1,4 @@
-# Лекция 19. Нормализация, Аномалии, Нормальные формы, Транзакции, ACID, TCL, Backup
+# Лекция 19: Нормализация, Аномалии, Нормальные формы, Транзакции, ACID, TCL, Backup
 
 ![normalization_db.jpg](image/normalization_db.jpg)
 

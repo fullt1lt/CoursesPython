@@ -1,4 +1,4 @@
-# Лекция 3. Исключения и их обработка в Python
+# Лекция 3: Исключения и их обработка в Python
 
 ![try_except_meme.webp](image/try_except_meme.webp)
 

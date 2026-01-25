@@ -1,4 +1,4 @@
-# MODULE 3. Интернет-магазин на Django (практический модуль)
+# MODULE 3: Интернет-магазин на Django (практический модуль)
 
 ![](https://envybox.io/blog/wp-content/uploads/2020/04/ecommerce-1.jpg)
 

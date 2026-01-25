@@ -1,4 +1,4 @@
-# Лекция 13. Декораторы.
+# Лекция 13: Декораторы.
 
 ![dekorators.jpeg](image/dekorators.jpeg)
 

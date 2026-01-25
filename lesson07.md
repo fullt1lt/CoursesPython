@@ -1,4 +1,4 @@
-# Лекция 7. Функции, типизация, lambda. Map, zip, filter.
+# Лекция 7: Функции, типизация, lambda. Map, zip, filter.
 
 ## Функции в Python
 

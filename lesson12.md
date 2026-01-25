@@ -1,4 +1,4 @@
-# Лекция 12. Расширенные возможности ООП в Python.
+# Лекция 12: Расширенные возможности ООП в Python.
 
 ![inheritance.jpg](image/inheritance.jpg)
 

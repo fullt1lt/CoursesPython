@@ -1,4 +1,4 @@
-# Лекция 20. Virtual env. Pip. Устанавливаемые модули. Pyenv.
+# Лекция 20: Virtual env. Pip. Устанавливаемые модули. Pyenv.
 
 ![virtual_python.webp](image/virtual_python.webp)
 

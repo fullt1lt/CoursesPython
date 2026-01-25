@@ -1,4 +1,4 @@
-# Лекция 14. Imports. Standard library. PEP8.
+# Лекция 14: Imports. Standard library. PEP8.
 
 ![Python-Imports.webp](image/Python-Imports.webp)
 

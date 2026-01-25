@@ -1,4 +1,4 @@
-# Лекция 5. List comprehension. Встроенные функции Python. Работа с файлами.
+# Лекция 5: List comprehension. Встроенные функции Python. Работа с файлами.
 
 ## List Comprehension
 

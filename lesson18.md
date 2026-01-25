@@ -1,4 +1,4 @@
-# Лекция 18. СУБД. DQL. SELECT. Индексы. Group by. Joins.
+# Лекция 18: СУБД. DQL. SELECT. Индексы. Group by. Joins.
 
 ## DQL (Data query language) (Язык запроса данных)
 
