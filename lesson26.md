@@ -1,4 +1,4 @@
-# Лекция 26. Forms, ModelForms. User, Authentication в Django
+# Лекция 26: Forms, ModelForms. User, Authentication в Django
 
 ![](image/Django_forms.webp)
 

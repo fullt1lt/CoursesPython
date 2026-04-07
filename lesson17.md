@@ -1,4 +1,4 @@
-# Лекция 17. СУБД. PostgreSQL. SQL. DDL. Пользователи. DCL. DML. Связи.
+# Лекция 17: СУБД. PostgreSQL. SQL. DDL. Пользователи. DCL. DML. Связи.
 
 ![spiderMan.png](image/spiderMan.png)
 

@@ -1,4 +1,4 @@
-# Лекция 18. СУБД. DQL. SELECT. Индексы. Group by. Joins.
+# Лекция 18: СУБД. DQL. SELECT. Индексы. Group by. Joins.
 
 ## DQL (Data query language) (Язык запроса данных)
 
@@ -915,8 +915,9 @@ INSERT INTO orders (user_id, product, amount) VALUES
     (1, 'Телефон', 1200),
     (2, 'Ноутбук', 2500),
     (2, 'Мышь', 500),
-    (3, 'Клавиатура', 1000),
-    (5, 'Монитор', 3000); 
+    (3, 'Клавиатура', 1000);
+
+INSERT INTO orders (product, amount) VALUES ('Монитор', 3000);
 ```
 
 **Здесь `user_id = 5,` но такого пользователя нет в `users`!**

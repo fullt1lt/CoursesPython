@@ -1,4 +1,4 @@
-# Лекция 24. Модели в Django. Установка и настройка базы данных PostgreSQL. Связи между моделями. Meta, Abstract, Proxy
+# Лекция 24: Модели в Django. Установка и настройка базы данных PostgreSQL. Связи между моделями. Meta, Abstract, Proxy
 
 ![](image/Models_in_Django.jpg)
 

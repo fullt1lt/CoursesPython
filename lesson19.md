@@ -1,4 +1,4 @@
-# Лекция 19. Нормализация, Аномалии, Нормальные формы, Транзакции, ACID, TCL, Backup
+# Лекция 19: Нормализация, Аномалии, Нормальные формы, Транзакции, ACID, TCL, Backup
 
 ![normalization_db.jpg](image/normalization_db.jpg)
 
@@ -198,13 +198,13 @@ DELETE FROM orders WHERE order_id = 1;
 
 Разбиваем каждый товар из заказа на отдельную строку. Теперь одна строка = один товар в заказе.
 
-| order_id | customer_name | email                                | product_name               | quantity | price_per_item | total_item_price |
-| -------- | ------------- | ------------------------------------ | -------------------------- | -------- | -------------- | ---------------- |
-| 1        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Телефон             | 1        | 1200           | 1200             |
-| 1        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Наушники           | 2        | 250            | 500              |
-| 2        | Мария    | [maria@mail.com](mailto:maria@mail.com) | Ноутбук             | 1        | 2500           | 2500             |
-| 3        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Микроволновка | 1        | 1700           | 1700             |
-| 3        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Утюг                   | 1        | 1500           | 1500             |
+| order_id | customer_name | email                                | product_name               | quantity | price_per_item | total_item_price | category_names |
+| -------- | ------------- | ------------------------------------ | -------------------------- | -------- | -------------- | ---------------- |---------------|
+| 1        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Телефон             | 1        | 1200           | 1200             | Электроника   |
+| 1        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Наушники           | 2        | 250            | 500              | Электроника   |
+| 2        | Мария    | [maria@mail.com](mailto:maria@mail.com) | Ноутбук             | 1        | 2500           | 2500             | Электроника   |
+| 3        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Микроволновка | 1        | 1700           | 1700             | Бтовая техника |
+| 3        | Иван      | [ivan@mail.com](mailto:ivan@mail.com)   | Утюг                   | 1        | 1500           | 1500             | Техника       |
 
 Обратите внимание: поле `total_item_price` удобно рассчитывать прямо при сохранении строки, чтобы потом не суммировать заново.
 
@@ -225,11 +225,11 @@ DELETE FROM orders WHERE order_id = 1;
 
 В таблице, несмотря на атомарные значения, данные о клиенте (имя и email) повторяются в каждой строке, где есть заказ от этого клиента:
 
-| order_id | customer_name | email         | product_name               | quantity | price_per_item | total_item_price |
-| -------- | ------------- | ------------- | -------------------------- | -------- | -------------- | ---------------- |
-| 1        | Иван      | ivan@mail.com | Телефон             | 1        | 1200           | 1200             |
-| 1        | Иван      | ivan@mail.com | Наушники           | 2        | 250            | 500              |
-| 3        | Иван      | ivan@mail.com | Микроволновка | 1        | 1700           | 1700             |
+| order_id | customer_name | email         | product_name               | quantity | price_per_item | total_item_price | category_names  |
+| -------- | ------------- | ------------- | -------------------------- | -------- | -------------- | ---------------- |-----------------|
+| 1        | Иван      | ivan@mail.com | Телефон             | 1        | 1200           | 1200             | Электроника     |
+| 1        | Иван      | ivan@mail.com | Наушники           | 2        | 250            | 500              | Электроника     |
+| 3        | Иван      | ivan@mail.com | Микроволновка | 1        | 1700           | 1700             | Бытовая техника |
 
 Поля `customer_name` и `email` зависят не от конкретной строки товара, а от клиента — они дублируются и засоряют таблицу.
 

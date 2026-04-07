@@ -1,4 +1,4 @@
-# Лекция 20. Virtual env. Pip. Устанавливаемые модули. Pyenv.
+# Лекция 20: Virtual env. Pip. Устанавливаемые модули. Pyenv.
 
 ![virtual_python.webp](image/virtual_python.webp)
 
@@ -260,6 +260,12 @@ pandas  1.5.3
 requests  2.28.1
 django  4.0.3
 ```
+
+Чтобы убрать мусор из вывода в виде библиотек, используйте команду:
+```bash
+pip list --not-required
+```
+
 
 Также можно посмотреть более детальную информацию о конкретном пакете:
 

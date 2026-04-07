@@ -1,4 +1,4 @@
-# Лекция 25. Django ORM. Объекты моделей и QuerySet, Meta моделей, Прокси-модели
+# Лекция 25: Django ORM. Объекты моделей и QuerySet, Meta моделей, Прокси-модели
 
 ![](image/ORM.png)
 
